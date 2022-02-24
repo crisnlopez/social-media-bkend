@@ -28,7 +28,7 @@ func (c Client) EnsureDB() error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // Create a new database using Client.DBPath.
@@ -46,5 +46,43 @@ func (c Client) createDB() error {
 		return err
 	}
 
-	return err
+	return nil
+}
+
+func (c Client) updateDB(db databaseScheme) error {
+	err := c.EnsureDB()
+	if err != nil {
+		return err
+	}
+
+	dat, err := json.Marshal(databaseScheme{
+		Users: db.Users,
+		Post:  db.Post,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(c.DbPath, dat, 0666)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Client) readDB() (databaseScheme, error) {
+	newDb := databaseScheme{}
+
+	data, err := os.ReadFile(c.DbPath)
+	if err != nil {
+		return databaseScheme{}, err
+	}
+
+	err = json.Unmarshal(data, &newDb)
+	if err != nil {
+		return databaseScheme{}, err
+	}
+
+	return newDb, nil
 }
