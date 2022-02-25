@@ -2,13 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	db "github.com/crisnlopez/social-media-bkend/internal/database"
 )
+
+type apiConfig struct {
+	dbClient db.Client
+}
 
 func main() {
 	// Create database
@@ -23,78 +27,22 @@ func main() {
 
 	// Router
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", testHandler)
-	mux.HandleFunc("/err", testErrHanlder)
 	mux.HandleFunc("/users", apiCfg.endpointUsersHandler)
 	mux.HandleFunc("/users/", apiCfg.endpointUsersHandler)
 
+	const addr = "localhost:8080"
 	srv := http.Server{
-		Addr:         "localhost:8080",
+		Addr:         addr,
 		Handler:      mux,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
+	// Blocks forever, until the server
+	// has an unrecoverable error
+	fmt.Println("server started on", addr)
 	err = srv.ListenAndServe()
 	log.Fatal(err)
-}
-
-type apiConfig struct {
-	dbClient db.Client
-}
-
-func (apiCfg apiConfig) endpointUsersHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		// call  GET handler
-	case http.MethodPost:
-		//call POST handler
-		apiCfg.handlerCreateUser(w, r)
-	case http.MethodPut:
-		//call PUT handler
-	case http.MethodDelete:
-		//call DELETE handler
-	default:
-		responseWithError(w, 404, errors.New("method not supported"))
-	}
-}
-
-// Post handler reads the request body and creates a user with the given parameters
-func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
-		Age      int    `json:"age"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
-	err := decoder.Decode(&params) // Store decode JSON in params struct
-	if err != nil {
-		responseWithError(w, http.StatusBadRequest, err)
-		return
-	}
-
-	user, err := apiCfg.dbClient.CreateUser(params.Email, params.Password, params.Name, params.Age)
-	if err != nil {
-		responseWithError(w, http.StatusInternalServerError, err)
-	}
-	respondWithJSON(w, http.StatusCreated, user)
-}
-
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	respondWithJSON(w, 200, db.User{
-		Email:    "test@example.com",
-		Password: "Password",
-		Name:     "Pepe",
-		Age:      20,
-	})
-}
-
-func testErrHanlder(w http.ResponseWriter, r *http.Request) {
-	err := errors.New("server error")
-	responseWithError(w, 500, err)
 }
 
 type errorBody struct {
