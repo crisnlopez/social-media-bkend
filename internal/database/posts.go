@@ -60,7 +60,7 @@ func (c Client) GetPosts(userEmail string) ([]Post, error) {
 		}
 	}
 
-	return posts, err
+	return posts, nil
 }
 
 func (c Client) DeletePost(id string) error {
