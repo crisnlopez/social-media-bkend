@@ -26,7 +26,7 @@ func (c Client) CreateUser(email, password, name string, age int) (User, error) 
 
 	// New user instance
 	user := User{
-		CreatedAt: time.Now().UTC(),
+		CreatedAt: time.Now().UTC().Local(),
 		Email:     email,
 		Password:  password,
 		Name:      name,
