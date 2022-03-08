@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (apiCfg apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
+func (apiClnt apiClient) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Password string `json:"password"`
 		Name     string `json:"name"`
@@ -22,7 +22,7 @@ func (apiCfg apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request
 	}
 
 	email := strings.TrimPrefix(r.URL.Path, "/users/")
-	user, err := apiCfg.dbClient.UpdateUser(email, params.Password, params.Name, params.Age)
+	user, err := apiClnt.dbClient.UpdateUser(email, params.Password, params.Name, params.Age)
 	if err != nil {
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return

@@ -6,7 +6,7 @@ import (
 )
 
 // Post handler reads the request body and creates a user with the given parameters
-func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (apiClnt apiClient) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -22,7 +22,7 @@ func (apiCfg apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := apiCfg.dbClient.CreateUser(params.Email, params.Password, params.Name, params.Age)
+	user, err := apiClnt.dbClient.CreateUser(params.Email, params.Password, params.Name, params.Age)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, err)
 	}

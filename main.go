@@ -10,7 +10,7 @@ import (
 	db "github.com/crisnlopez/social-media-bkend/internal/database"
 )
 
-type apiConfig struct {
+type apiClient struct {
 	dbClient db.Client
 }
 
@@ -21,14 +21,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	apiCfg := apiConfig{
+	apiClient := apiClient{
 		dbClient: dbClient,
 	}
 
 	// Router
 	mux := http.NewServeMux()
-	mux.HandleFunc("/users", apiCfg.endpointUsersHandler)
-	mux.HandleFunc("/users/", apiCfg.endpointUsersHandler)
+	mux.HandleFunc("/users", apiClient.endpointUsersHandler)
+	mux.HandleFunc("/users/", apiClient.endpointUsersHandler)
 
 	const addr = "localhost:8080"
 	srv := http.Server{
