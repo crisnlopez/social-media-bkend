@@ -32,7 +32,7 @@ func (c Client) CreateUser(email, password, name string, age int) (User, error) 
 		Name:      name,
 		Age:       age,
 	}
-	db.Users[email] = user // User email as "Primery Key" cause we can´t have two users with the same email
+	db.Users[email] = user // User email as "Primary Key" cause we can´t have two users with the same email
 
 	err = c.updateDB(db)
 	if err != nil {

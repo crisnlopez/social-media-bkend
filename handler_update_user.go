@@ -5,14 +5,15 @@ import (
 	"net/http"
 	"strings"
 )
-
-func (apiClnt apiClient) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
+  
+type parameters struct {
 		Password string `json:"password"`
 		Name     string `json:"name"`
 		Age      int    `json:"age"`
 	}
-
+  
+func (apiClnt apiClient) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
+	
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
 	err := decoder.Decode(&params)
