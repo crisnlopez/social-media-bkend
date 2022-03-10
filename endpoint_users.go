@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Check the request method and call the corresponding handler function
+//Check the request method and call the corresponding handler function
 func (apiClnt apiClient) endpointUsersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

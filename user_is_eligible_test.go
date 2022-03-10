@@ -39,7 +39,7 @@ var test = []struct{
 
 func TestUserIsEligible(t *testing.T) {
   for _, tt := range test {
-    err := userIsElegible(tt.email, tt.password, tt.age)
+    err := userIsEligible(tt.email, tt.password, tt.age)
 
     errString := ""
     expectedErrString := ""
@@ -57,5 +57,3 @@ func TestUserIsEligible(t *testing.T) {
     }
   }
 }
-
-

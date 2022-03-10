@@ -14,6 +14,10 @@ type apiClient struct {
 	dbClient db.Client
 }
 
+type errorBody struct {
+	Error string `json:"error"`
+}
+
 func main() {
 	// Create database
 	dbClient := db.NewClient("db.json")
@@ -29,6 +33,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users", apiClient.endpointUsersHandler)
 	mux.HandleFunc("/users/", apiClient.endpointUsersHandler)
+  mux.HandleFunc("/posts", apiClient.endpointPostsHandler)
+  mux.HandleFunc("/posts/", apiClient.endpointPostsHandler)
 
 	const addr = "localhost:8080"
 	srv := http.Server{
@@ -43,10 +49,6 @@ func main() {
 	fmt.Println("server started on", addr)
 	err = srv.ListenAndServe()
 	log.Fatal(err)
-}
-
-type errorBody struct {
-	Error string `json:"error"`
 }
 
 func responseWithError(w http.ResponseWriter, code int, err error) {
