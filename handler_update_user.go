@@ -6,26 +6,32 @@ import (
 	"strings"
 )
   
-type parameters struct {
+type updateUserDecoder struct {
 		Password string `json:"password"`
 		Name     string `json:"name"`
 		Age      int    `json:"age"`
 	}
   
 func (apiClnt apiClient) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
+	email := strings.TrimPrefix(r.URL.Path, "/users/")
 	
 	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
+	params := updateUserDecoder{}
 	err := decoder.Decode(&params)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	email := strings.TrimPrefix(r.URL.Path, "/users/")
+  err = userIsElegible(email, params.Password, params.Age)
+  if err != nil {
+    responseWithError(w, http.StatusBadRequest, err)
+    return
+  }
+
 	user, err := apiClnt.dbClient.UpdateUser(email, params.Password, params.Name, params.Age)
 	if err != nil {
-		respondWithJSON(w, http.StatusInternalServerError, err)
+		responseWithError(w, http.StatusBadRequest, err)
 		return
 	}
 	respondWithJSON(w, http.StatusOK, user)
