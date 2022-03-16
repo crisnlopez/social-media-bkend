@@ -22,7 +22,7 @@ func (apiClnt apiClient) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-  err = userIsElegible(params.Email,params.Password,params.Age)
+  err = userIsEligible(params.Email,params.Password,params.Age)
   if err != nil {
     responseWithError(w, http.StatusBadRequest, err)
     return
