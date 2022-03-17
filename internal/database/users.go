@@ -1,46 +1,66 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
-	"time"
 )
 
 // User -
 type User struct {
-	CreatedAt time.Time `json:"createdAt"`
 	Email     string    `json:"email"`
-	Pass  string    `json:"password"`
+	Pass      string    `json:"pass"`
 	Name      string    `json:"name"`
 	Age       int       `json:"age"`
 }
 
-func (c Client) CreateUser(email, password, name string, age int) (User, error) {
+func (c Client) CreateUser(email, pass, name string, age int) (User, error) {
   // Need check if user exist
+  var col string
+
+  row := c.DB.QueryRow("select email from users where email = ?", email)
+  err := row.Scan(&col)
+  if err != nil {
+    if err != sql.ErrNoRows {
+      return User{}, fmt.Errorf("User with %s email already exists", email)
+    }
+  }
 
 	// New user instance
 	user := User{
-		CreatedAt: time.Now().UTC().Local(),
 		Email:     email,
-		Pass:  password,
+		Pass:      pass,
 		Name:      name,
 		Age:       age,
 	}
 
-  _, err := c.DB.Exec("insert into users (email, password, name, age) values (?, ?, ?, ?)", user.Email, user.Pass, user.Name, user.Age)
+  // Create User
+  _, err = c.DB.Exec("insert into users (email, pass, name, age) values (?, ?, ?, ?)",user.Email, user.Pass, user.Name, user.Age)
   if err != nil {
-    return User{}, fmt.Errorf("Error creating user: %v", err)
+    return User{}, fmt.Errorf("Error creating user: %v\n", err)
   }
 
 	return user, nil
 }
 
-func (c Client) UpdateUser(email, password, name string, age int) (User, error) {
-  result, err := c.DB.Exec("update users set pass = ?, name = ?, age = ? where email = ?", password, name, age, email)
+func (c Client) UpdateUser(email, pass, name string, age int) (User, error) {
+ // Need check if user exist
+  var col string
+
+  row := c.DB.QueryRow("select email from users where email = ?", email)
+  err := row.Scan(&col)
+  if err != nil {
+    if err == sql.ErrNoRows {
+      return User{}, fmt.Errorf("User with %s email doesn't exists", email)
+    } else {
+      return User{}, err
+    }
+  }
+
+  // Update user
+  _, err = c.DB.Exec("update users set pass = ?, name = ?, age = ? where email = ?", pass, name, age, email)
   if err != nil {
     return User{}, err
   }
-
-  result.RowsAffected() 
 
   return c.GetUser(email) // Need to return User update
 }
@@ -55,12 +75,12 @@ func (c Client) GetUser(email string) (User, error) {
 
   defer rows.Close()
   for rows.Next() {
-    if err := rows.Scan(&user.CreatedAt, &user.Email, &user.Pass, &user.Name, &user.Age); err != nil {
-      return User{}, fmt.Errorf("Get user: %q, %v", email, err)
+    if err := rows.Scan(&user.Email, &user.Pass, &user.Name, &user.Age); err != nil {
+      return User{}, fmt.Errorf("Get user: %q, %v\n", email, err)
     }
 
     if err = rows.Err(); err != nil {
-      return User{}, fmt.Errorf("Get user: %q, %v", email, err)
+      return User{}, fmt.Errorf("Get user: %q, %v\n", email, err)
     }
   }
 
@@ -68,12 +88,10 @@ func (c Client) GetUser(email string) (User, error) {
 }
 
 func (c Client) DeleteUser(email string) error {
-  result, err := c.DB.Exec("delete from users where email = ?", email)
+  _, err := c.DB.Exec("delete from users where email = ?", email)
   if err != nil {
     return err
   }
-
-  fmt.Printf("User deleted, printing result: %s", result)
 
   return nil
 }

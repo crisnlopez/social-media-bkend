@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -15,9 +14,7 @@ type Client struct {
 
 // Take the database name and return a Client instance
 func NewClient(dbName string) (Client, error) {
-  // DB Connection
-  var DbConnection *sql.DB
-
+  // DB Connection config
   cfg := mysql.Config{
     User: os.Getenv("DBUSER"),
     Passwd: os.Getenv("DBPASS"),
@@ -27,8 +24,7 @@ func NewClient(dbName string) (Client, error) {
     AllowNativePasswords: true,
   }
 
-  var err error 
-  DbConnection, err = sql.Open("mysql", cfg.FormatDSN())
+  DbConnection, err := sql.Open("mysql", cfg.FormatDSN())
   if err != nil {
     return Client{&sql.DB{}}, err
   }
@@ -37,7 +33,6 @@ func NewClient(dbName string) (Client, error) {
   if pingErr != nil {
     log.Fatal(pingErr)
   }
-  fmt.Printf("%s is connected", dbName)
 
 	return Client{DbConnection}, nil
 }
