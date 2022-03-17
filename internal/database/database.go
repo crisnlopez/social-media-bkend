@@ -1,88 +1,43 @@
 package database
 
 import (
-	"encoding/json"
+	"database/sql"
+	"fmt"
+	"log"
 	"os"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 type Client struct {
-	DbPath string
+  *sql.DB
 }
 
-type databaseScheme struct {
-	Users map[string]User `json:"users"`
-	Post  map[string]Post `json:"posts"`
-}
+// Take the database name and return a Client instance
+func NewClient(dbName string) (Client, error) {
+  // DB Connection
+  var DbConnection *sql.DB
 
-// Take the file path to the database and return a Client instance
-func NewClient(dbpath string) Client {
-	return Client{DbPath: dbpath}
-}
+  cfg := mysql.Config{
+    User: os.Getenv("DBUSER"),
+    Passwd: os.Getenv("DBPASS"),
+    Net: "tcp",
+    Addr: "127.0.0.1:3306",
+    DBName: dbName,
+    AllowNativePasswords: true,
+  }
 
-// Check if a database already exists. If it does, all is good. Otherwise, create a new database using Client.DBPath.
-func (c Client) EnsureDB() error {
-	_, err := os.ReadFile(c.DbPath)
+  var err error 
+  DbConnection, err = sql.Open("mysql", cfg.FormatDSN())
+  if err != nil {
+    return Client{&sql.DB{}}, err
+  }
 
-	if err != nil {
-		err = c.createDB()
-		return err
-	}
+  pingErr := DbConnection.Ping()
+  if pingErr != nil {
+    log.Fatal(pingErr)
+  }
+  fmt.Printf("%s is connected", dbName)
 
-	return nil
-}
-
-// Create a new database using Client.DBPath.
-func (c Client) createDB() error {
-	dat, err := json.Marshal(databaseScheme{ // Empty database instance
-		Users: make(map[string]User),
-		Post:  make(map[string]Post),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(c.DbPath, dat, 0666)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c Client) updateDB(db databaseScheme) error {
-	err := c.EnsureDB()
-	if err != nil {
-		return err
-	}
-
-	dat, err := json.Marshal(databaseScheme{
-		Users: db.Users,
-		Post:  db.Post,
-	})
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(c.DbPath, dat, 0666)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c Client) readDB() (databaseScheme, error) {
-	newDb := databaseScheme{}
-
-	data, err := os.ReadFile(c.DbPath)
-	if err != nil {
-		return databaseScheme{}, err
-	}
-
-	err = json.Unmarshal(data, &newDb)
-	if err != nil {
-		return databaseScheme{}, err
-	}
-
-	return newDb, nil
+	return Client{DbConnection}, nil
 }

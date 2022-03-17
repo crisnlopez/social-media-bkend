@@ -1,7 +1,7 @@
 package database
 
 import (
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -9,91 +9,71 @@ import (
 type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Pass  string    `json:"password"`
 	Name      string    `json:"name"`
 	Age       int       `json:"age"`
 }
 
 func (c Client) CreateUser(email, password, name string, age int) (User, error) {
-	db, err := c.readDB()
-	if err != nil {
-		return User{}, err
-	}
-
-	if _, ok := db.Users[email]; ok {
-		return User{}, errors.New("user already exist")
-	}
+  // Need check if user exist
 
 	// New user instance
 	user := User{
 		CreatedAt: time.Now().UTC().Local(),
 		Email:     email,
-		Password:  password,
+		Pass:  password,
 		Name:      name,
 		Age:       age,
 	}
-	db.Users[email] = user // User email as "Primary Key" cause we can´t have two users with the same email
 
-	err = c.updateDB(db)
-	if err != nil {
-		return User{}, err
-	}
+  _, err := c.DB.Exec("insert into users (email, password, name, age) values (?, ?, ?, ?)", user.Email, user.Pass, user.Name, user.Age)
+  if err != nil {
+    return User{}, fmt.Errorf("Error creating user: %v", err)
+  }
 
 	return user, nil
 }
 
 func (c Client) UpdateUser(email, password, name string, age int) (User, error) {
-	db, err := c.readDB()
-	if err != nil {
-		return User{}, err
-	}
+  result, err := c.DB.Exec("update users set pass = ?, name = ?, age = ? where email = ?", password, name, age, email)
+  if err != nil {
+    return User{}, err
+  }
 
-	// Check if this user exist
-	user, ok := db.Users[email]
-	if !ok {
-		return User{}, errors.New("User doesn´t exist")
-	}
+  result.RowsAffected() 
 
-	// Update fields
-	user.Password = password
-	user.Name = name
-	user.Age = age
-	db.Users[email] = user
-
-	err = c.updateDB(db)
-	if err != nil {
-		return User{}, err
-	}
-
-	return user, err
+  return c.GetUser(email) // Need to return User update
 }
 
 func (c Client) GetUser(email string) (User, error) {
-	db, err := c.readDB()
-	if err != nil {
-		return User{}, err
-	}
+  user := User{}
 
-	user, ok := db.Users[email]
-	if !ok {
-		return User{}, errors.New("User doesn´t exist")
-	}
+  rows, err := c.DB.Query("select * from users where email = ?", email)
+  if err != nil {
+    return User{}, err
+  }
 
-	return user, nil
+  defer rows.Close()
+  for rows.Next() {
+    if err := rows.Scan(&user.CreatedAt, &user.Email, &user.Pass, &user.Name, &user.Age); err != nil {
+      return User{}, fmt.Errorf("Get user: %q, %v", email, err)
+    }
+
+    if err = rows.Err(); err != nil {
+      return User{}, fmt.Errorf("Get user: %q, %v", email, err)
+    }
+  }
+
+  return user, nil
 }
 
 func (c Client) DeleteUser(email string) error {
-	db, err := c.readDB()
-	if err != nil {
-		return err
-	}
+  result, err := c.DB.Exec("delete from users where email = ?", email)
+  if err != nil {
+    return err
+  }
 
-	delete(db.Users, email)
+  fmt.Printf("User deleted, printing result: %s", result)
 
-	err = c.updateDB(db)
-	if err != nil {
-		return err
-	}
-
-	return nil
+  return nil
 }

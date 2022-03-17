@@ -10,31 +10,19 @@ import (
 	db "github.com/crisnlopez/social-media-bkend/internal/database"
 )
 
-type apiClient struct {
-	dbClient db.Client
-}
-
 type errorBody struct {
 	Error string `json:"error"`
 }
 
 func main() {
-	// Create database
-	dbClient := db.NewClient("db.json")
-	err := dbClient.EnsureDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-	apiClient := apiClient{
-		dbClient: dbClient,
-	}
+  dbConecction, err := db.NewClient("social_media")
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println(&dbConecction)
 
 	// Router
 	mux := http.NewServeMux()
-	mux.HandleFunc("/users", apiClient.endpointUsersHandler)
-	mux.HandleFunc("/users/", apiClient.endpointUsersHandler)
-  mux.HandleFunc("/posts", apiClient.endpointPostsHandler)
-  mux.HandleFunc("/posts/", apiClient.endpointPostsHandler)
 
 	const addr = "localhost:8080"
 	srv := http.Server{
