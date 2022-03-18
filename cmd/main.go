@@ -7,55 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	db "github.com/crisnlopez/social-media-bkend/internal/database"
+	_ "github.com/crisnlopez/social-media-bkend/internal/database"
 )
 
 type errorBody struct {
 	Error string `json:"error"`
 }
 
-func main() {
-  dbClient, err := db.NewClient("social_media")
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  user, err := dbClient.CreateUser("text@example.com", "12345", "Pepe", 20)
-  if err != nil {
-    log.Fatal(err)
-  }
-  fmt.Printf("User created: %v\n", user)
-
-  user, err = dbClient.UpdateUser("text@example.com", "123455555", "Carlos", 30)
-  if err != nil {
-    log.Fatal(err)
-  }
-  fmt.Printf("User update: %v\n", user)
-
-  user, err = dbClient.UpdateUser("text@example_false.com", "12345", "Robert", 12)
-  if err != nil {
-    fmt.Println(err)
-  }
-  fmt.Printf("User update, but it should't: %+v\n", user)
-
-  user, err = dbClient.GetUser("text@example.com")
-  if err != nil {
-    log.Fatal(err)
-  }
-  fmt.Printf("Get user: %v\n", user)
-
-  err = dbClient.DeleteUser("text@example.com")
-  if err != nil {
-    log.Fatal(err)
-  }
-  fmt.Println("User deleted")
-
-  user, err = dbClient.GetUser("text@example.com")
-  if err != nil {
-    fmt.Println(err)
-  }
-
-  defer dbClient.Close()
+func main() { 
 	// Router
 	mux := http.NewServeMux()
 
@@ -70,7 +29,7 @@ func main() {
 	// Blocks forever, until the server
 	// has an unrecoverable error
 	fmt.Println("server started on", addr)
-	err = srv.ListenAndServe()
+  err := srv.ListenAndServe()
 	log.Fatal(err)
 }
 

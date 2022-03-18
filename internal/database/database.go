@@ -9,7 +9,7 @@ import (
 )
 
 type Client struct {
-  *sql.DB
+  db *sql.DB
 }
 
 // Take the database name and return a Client instance

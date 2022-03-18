@@ -17,7 +17,7 @@ func (c Client) CreateUser(email, pass, name string, age int) (User, error) {
   // Need check if user exist
   var col string
 
-  row := c.DB.QueryRow("select email from users where email = ?", email)
+  row := c.db.QueryRow("select email from users where email = ?", email)
   err := row.Scan(&col)
   if err != nil {
     if err != sql.ErrNoRows {
@@ -33,8 +33,8 @@ func (c Client) CreateUser(email, pass, name string, age int) (User, error) {
 		Age:       age,
 	}
 
-  // Create User
-  _, err = c.DB.Exec("insert into users (email, pass, name, age) values (?, ?, ?, ?)",user.Email, user.Pass, user.Name, user.Age)
+  // Create User in Database
+  _, err = c.db.Exec("insert into users (email, pass, name, age) values (?, ?, ?, ?)",user.Email, user.Pass, user.Name, user.Age)
   if err != nil {
     return User{}, fmt.Errorf("Error creating user: %v\n", err)
   }
@@ -46,7 +46,7 @@ func (c Client) UpdateUser(email, pass, name string, age int) (User, error) {
  // Need check if user exist
   var col string
 
-  row := c.DB.QueryRow("select email from users where email = ?", email)
+  row := c.db.QueryRow("select email from users where email = ?", email)
   err := row.Scan(&col)
   if err != nil {
     if err == sql.ErrNoRows {
@@ -57,7 +57,7 @@ func (c Client) UpdateUser(email, pass, name string, age int) (User, error) {
   }
 
   // Update user
-  _, err = c.DB.Exec("update users set pass = ?, name = ?, age = ? where email = ?", pass, name, age, email)
+  _, err = c.db.Exec("update users set pass = ?, name = ?, age = ? where email = ?", pass, name, age, email)
   if err != nil {
     return User{}, err
   }
@@ -68,7 +68,7 @@ func (c Client) UpdateUser(email, pass, name string, age int) (User, error) {
 func (c Client) GetUser(email string) (User, error) {
   user := User{}
 
-  rows, err := c.DB.Query("select * from users where email = ?", email)
+  rows, err := c.db.Query("select * from users where email = ?", email)
   if err != nil {
     return User{}, err
   }
@@ -88,7 +88,7 @@ func (c Client) GetUser(email string) (User, error) {
 }
 
 func (c Client) DeleteUser(email string) error {
-  _, err := c.DB.Exec("delete from users where email = ?", email)
+  _, err := c.db.Exec("delete from users where email = ?", email)
   if err != nil {
     return err
   }
