@@ -13,11 +13,11 @@ type User struct {
 	Age       int       `json:"age"`
 }
 
-func (c Client) CreateUser(email, pass, name string, age int) (User, error) {
+func (d DB) CreateUser(email, pass, name string, age int) (User, error) {
   // Need check if user exist
   var col string
 
-  row := c.db.QueryRow("select email from users where email = ?", email)
+  row := d.Db.QueryRow("select email from users where email = ?", email)
   err := row.Scan(&col)
   if err != nil {
     if err != sql.ErrNoRows {
@@ -34,7 +34,7 @@ func (c Client) CreateUser(email, pass, name string, age int) (User, error) {
 	}
 
   // Create User in Database
-  _, err = c.db.Exec("insert into users (email, pass, name, age) values (?, ?, ?, ?)",user.Email, user.Pass, user.Name, user.Age)
+  _, err = d.Db.Exec("insert into users (email, pass, name, age) values (?, ?, ?, ?)",user.Email, user.Pass, user.Name, user.Age)
   if err != nil {
     return User{}, fmt.Errorf("Error creating user: %v\n", err)
   }
@@ -42,11 +42,11 @@ func (c Client) CreateUser(email, pass, name string, age int) (User, error) {
 	return user, nil
 }
 
-func (c Client) UpdateUser(email, pass, name string, age int) (User, error) {
+func (d DB) UpdateUser(email, pass, name string, age int) (User, error) {
  // Need check if user exist
   var col string
 
-  row := c.db.QueryRow("select email from users where email = ?", email)
+  row := d.Db.QueryRow("select email from users where email = ?", email)
   err := row.Scan(&col)
   if err != nil {
     if err == sql.ErrNoRows {
@@ -57,18 +57,18 @@ func (c Client) UpdateUser(email, pass, name string, age int) (User, error) {
   }
 
   // Update user
-  _, err = c.db.Exec("update users set pass = ?, name = ?, age = ? where email = ?", pass, name, age, email)
+  _, err = d.Db.Exec("update users set pass = ?, name = ?, age = ? where email = ?", pass, name, age, email)
   if err != nil {
     return User{}, err
   }
 
-  return c.GetUser(email) // Need to return User update
+  return d.GetUser(email) // Need to return User update
 }
 
-func (c Client) GetUser(email string) (User, error) {
+func (d DB) GetUser(email string) (User, error) {
   user := User{}
 
-  rows, err := c.db.Query("select * from users where email = ?", email)
+  rows, err := d.Db.Query("select * from users where email = ?", email)
   if err != nil {
     return User{}, err
   }
@@ -87,8 +87,8 @@ func (c Client) GetUser(email string) (User, error) {
   return user, nil
 }
 
-func (c Client) DeleteUser(email string) error {
-  _, err := c.db.Exec("delete from users where email = ?", email)
+func (d DB) DeleteUser(email string) error {
+  _, err := d.Db.Exec("delete from users where email = ?", email)
   if err != nil {
     return err
   }

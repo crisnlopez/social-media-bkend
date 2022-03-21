@@ -8,12 +8,12 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-type Client struct {
-  db *sql.DB
+type DB struct {
+  Db *sql.DB
 }
 
-// Take the database name and return a Client instance
-func NewClient(dbName string) (Client, error) {
+// Take the database name and return a DB reference to data source
+func OpenDB(dbName string) (*sql.DB, error) {
   // DB Connection config
   cfg := mysql.Config{
     User: os.Getenv("DBUSER"),
@@ -24,15 +24,15 @@ func NewClient(dbName string) (Client, error) {
     AllowNativePasswords: true,
   }
 
-  DbConnection, err := sql.Open("mysql", cfg.FormatDSN())
+  db, err := sql.Open("mysql", cfg.FormatDSN())
   if err != nil {
-    return Client{&sql.DB{}}, err
+    return nil, err
   }
 
-  pingErr := DbConnection.Ping()
+  pingErr := db.Ping()
   if pingErr != nil {
     log.Fatal(pingErr)
   }
 
-	return Client{DbConnection}, nil
+	return db, nil
 }
