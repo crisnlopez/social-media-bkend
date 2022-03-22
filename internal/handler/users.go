@@ -17,6 +17,12 @@ type UserHandler struct {
   Db *sql.DB
 }
 
+type UserUpdated struct {
+  Pass string `json:"pass"`
+  Name string `json:"name"`
+  Age  int    `json:"age"`
+}
+
 func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
   // Decode request
   decoder := json.NewDecoder(r.Body)
@@ -75,6 +81,46 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprout
     if err == sql.ErrNoRows {
       res.RespondWithError(w, 404, err)
     }
+  }
+
+  res.RespondWithJSON(w, http.StatusOK, user)
+}
+
+func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+  // Getting email user Request
+  userEmail := ps.ByName("userEmail")
+  if userEmail == "" {
+    res.RespondWithError(w, http.StatusBadRequest, errors.New("no userEmail provided to update user!"))
+    return
+  }
+
+  // Decode JSON from request
+  decoder := json.NewDecoder(r.Body)
+  user := UserUpdated{}
+  err := decoder.Decode(&user)
+  if err != nil {
+    res.RespondWithError(w, http.StatusInternalServerError, err)
+  }
+
+  // Check if user exists
+  var col string
+  row := h.Db.QueryRow("SELECT email FROM users WHERE email = ?", userEmail)
+  err = row.Scan(&col)
+  if err != nil {
+    if err == sql.ErrNoRows {
+      res.RespondWithError(w, http.StatusBadRequest, errors.New("the email provided doesn't exist"))
+      return
+    } else {
+      res.RespondWithError(w, http.StatusInternalServerError, err)
+    }
+  }
+
+  // Updating user
+  _, err = h.Db.Exec("UPDATE users SET pass = ?, name = ?, age = ? WHERE email = ?", user.Pass, user.Name, user.Age, userEmail)
+  if err != nil {
+    res.RespondWithError(w, http.StatusInternalServerError, err)
+    return
   }
 
   res.RespondWithJSON(w, http.StatusOK, user)

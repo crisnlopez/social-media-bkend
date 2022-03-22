@@ -21,6 +21,7 @@ func main() {
   // Router
   router := httprouter.New()
   router.GET("/users/:userEmail", hd.UserHandler{Db:db}.GetUser)
+  router.PUT("/users/:userEmail", hd.UserHandler{Db: db}.UpdateUser)
   router.POST("/users", hd.UserHandler{Db: db}.CreateUser)
   
 	const addr = "localhost:8080"
