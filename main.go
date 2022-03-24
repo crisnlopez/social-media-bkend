@@ -20,10 +20,11 @@ func main() {
 
   // Router
   router := httprouter.New()
-  router.GET("/users/:userEmail", hd.UserHandler{Db:db}.GetUser)
-  router.PUT("/users/:userEmail", hd.UserHandler{Db: db}.UpdateUser)
+  router.GET("/users/:id", hd.UserHandler{Db:db}.GetUser)
+  router.PUT("/users/:id", hd.UserHandler{Db: db}.UpdateUser)
   router.POST("/users", hd.UserHandler{Db: db}.CreateUser)
-  
+  router.DELETE("/users/:id", hd.UserHandler{Db: db}.DeleteUser)
+ 
 	const addr = "localhost:8080"
 	srv := http.Server{
 		Addr:         addr,
