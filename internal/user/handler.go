@@ -14,29 +14,13 @@ import (
 )
 
 type userHandler struct {
-  db *sql.DB
-}
-
-type User struct {
-  ID        int    `json:"id,omitempty"`
-  Email     string `json:"email"`
-  Pass      string `json:"pass"`
-  Nick      string `json:"nick"`
-  Name      string `json:"name"`
-  Age       int    `json:"age"`
-}
-
-type UserUpdated struct {
-  Email string `json:"email"`
-  Pass  string `json:"pass"`
-  Nick  string `json:"nick"`
-  Name  string `json:"name"`
-  Age   int    `json:"age"`
+  // we have a user gateway between handler and repository
+  repo Repository
 }
 
 func New(db *sql.DB) userHandler{
   return userHandler{
-    db: db,
+    repo: newRepository(db),
   }
 }
 
@@ -49,14 +33,16 @@ func (h userHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
     http.Error(w, err.Error(), 400)
     return
   }
-
   // Check if user already exists
-  var email string
-  row := h.db.QueryRow("SELECT email FROM users WHERE email = ?", user.Email)
-  if err = row.Scan(&email); err != sql.ErrNoRows {
-    res.RespondWithError(w, http.StatusBadRequest, errors.New("User with email provided already exist"))
-    return
+  exists, err := h.repo.GetUserEmail(user)
+
+  if err != nil{
+    return 
   }
+  if exists{
+    return 
+  }
+
 
   // Execute Query
   result, err := h.db.Exec("INSERT INTO users (email, pass, user_nick, user_name, age) VALUES (?, ?, ?, ?, ?)", user.Email, user.Pass, user.Nick, user.Name, user.Age)

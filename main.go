@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	db "github.com/crisnlopez/social-media-bkend/internal/database"
-	"github.com/crisnlopez/social-media-bkend/internal/handler"
+  "github.com/crisnlopez/social-media-bkend/internal/user"
 )
 
 func main() { 
@@ -18,7 +18,7 @@ func main() {
     log.Fatal(err)
   } 
 
-  userHandler := handler.New(db)
+  userHandler := user.New(db)
   // Router
   router := httprouter.New()
   router.GET("/users/:id", userHandler.GetUser)
