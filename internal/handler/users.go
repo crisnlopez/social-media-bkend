@@ -150,7 +150,7 @@ func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httpr
   // Getting userID from Request
   userID, err := strconv.Atoi(ps.ByName("id"))
   if userID == 0 {
-    res.RespondWithError(w, http.StatusBadRequest, errors.New("no userID privided to delete user!"))
+    res.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to delete user!"))
     return
   }
 
