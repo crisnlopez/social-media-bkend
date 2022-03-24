@@ -1,4 +1,4 @@
-package handler
+package user
 
 import (
 	"database/sql"
@@ -13,8 +13,8 @@ import (
 	res "github.com/crisnlopez/social-media-bkend/internal/response"
 )
 
-type UserHandler struct {
-  Db *sql.DB
+type userHandler struct {
+  db *sql.DB
 }
 
 type User struct {
@@ -34,7 +34,13 @@ type UserUpdated struct {
   Age   int    `json:"age"`
 }
 
-func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func New(db *sql.DB) userHandler{
+  return userHandler{
+    db: db,
+  }
+}
+
+func (h userHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
   // Decode request
   decoder := json.NewDecoder(r.Body)
   user := User{}
@@ -46,14 +52,14 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 
   // Check if user already exists
   var email string
-  row := h.Db.QueryRow("SELECT email FROM users WHERE email = ?", user.Email)
+  row := h.db.QueryRow("SELECT email FROM users WHERE email = ?", user.Email)
   if err = row.Scan(&email); err != sql.ErrNoRows {
     res.RespondWithError(w, http.StatusBadRequest, errors.New("User with email provided already exist"))
     return
   }
 
   // Execute Query
-  result, err := h.Db.Exec("INSERT INTO users (email, pass, user_nick, user_name, age) VALUES (?, ?, ?, ?, ?)", user.Email, user.Pass, user.Nick, user.Name, user.Age)
+  result, err := h.db.Exec("INSERT INTO users (email, pass, user_nick, user_name, age) VALUES (?, ?, ?, ?, ?)", user.Email, user.Pass, user.Nick, user.Name, user.Age)
   if err != nil {
     http.Error(w, err.Error(), 500)
     return
@@ -82,7 +88,7 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
   w.Write(response)
 }
 
-func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h userHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
   user := User{}
 
   // Getting userID from Request
@@ -97,7 +103,7 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprout
   }
 
   // Getting User
-  if err := h.Db.QueryRow("SELECT * FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Email, &user.Pass, &user.Nick, &user.Name, &user.Age); err != nil {
+  if err := h.db.QueryRow("SELECT * FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Email, &user.Pass, &user.Nick, &user.Name, &user.Age); err != nil {
     if err == sql.ErrNoRows { // If user doesn't exist
       res.RespondWithError(w, http.StatusNotFound, err)
       return
@@ -110,7 +116,7 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprout
   res.RespondWithJSON(w, http.StatusOK, user)
 }
 
-func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h userHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
   // Getting userID from Request
   userID, err := strconv.Atoi(ps.ByName("id"))
   if userID == 0 {
@@ -129,7 +135,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 
   // Check if user exists
   var idCheck string
-  row := h.Db.QueryRow("SELECT id FROM users WHERE id = ?", userID)
+  row := h.db.QueryRow("SELECT id FROM users WHERE id = ?", userID)
   err = row.Scan(&idCheck)
   if err != nil {
     res.RespondWithError(w, http.StatusInternalServerError, err)
@@ -137,7 +143,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
   }
 
   // Updating user
-  _, err = h.Db.Exec("UPDATE users SET pass = ?, user_name = ?, age = ?, user_nick = ?, email = ? WHERE id = ?", user.Pass, user.Name, user.Age, user.Nick, user.Email, userID)
+  _, err = h.db.Exec("UPDATE users SET pass = ?, user_name = ?, age = ?, user_nick = ?, email = ? WHERE id = ?", user.Pass, user.Name, user.Age, user.Nick, user.Email, userID)
   if err != nil {
     res.RespondWithError(w, http.StatusInternalServerError, err)
     return
@@ -146,7 +152,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
   res.RespondWithJSON(w, http.StatusOK, user)
 }
 
-func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h userHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
   // Getting userID from Request
   userID, err := strconv.Atoi(ps.ByName("id"))
   if userID == 0 {
@@ -155,7 +161,7 @@ func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httpr
   }
 
   // Deleting User
-  _, err = h.Db.Exec("DELETE FROM users WHERE id = ?", userID)
+  _, err = h.db.Exec("DELETE FROM users WHERE id = ?", userID)
   if err != nil {
     res.RespondWithError(w, http.StatusInternalServerError, err)
     return

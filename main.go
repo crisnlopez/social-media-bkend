@@ -7,23 +7,24 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-  
+
 	db "github.com/crisnlopez/social-media-bkend/internal/database"
-  hd "github.com/crisnlopez/social-media-bkend/internal/handler"
+	"github.com/crisnlopez/social-media-bkend/internal/handler"
 )
 
 func main() { 
   db, err := db.OpenDB("social_media")
   if err != nil {
-  log.Fatal(err)
+    log.Fatal(err)
   } 
 
+  userHandler := handler.New(db)
   // Router
   router := httprouter.New()
-  router.GET("/users/:id", hd.UserHandler{Db:db}.GetUser)
-  router.PUT("/users/:id", hd.UserHandler{Db: db}.UpdateUser)
-  router.POST("/users", hd.UserHandler{Db: db}.CreateUser)
-  router.DELETE("/users/:id", hd.UserHandler{Db: db}.DeleteUser)
+  router.GET("/users/:id", userHandler.GetUser)
+  router.PUT("/users/:id", userHandler.UpdateUser)
+  router.POST("/users", userHandler.CreateUser)
+  router.DELETE("/users/:id", userHandler.DeleteUser)
  
 	const addr = "localhost:8080"
 	srv := http.Server{
