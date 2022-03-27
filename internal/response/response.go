@@ -18,6 +18,7 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
     response, err := json.Marshal(payload)
     if err != nil {
       log.Println("error marshalling", err)
+      
       w.WriteHeader(500)
       response, _ := json.Marshal(errorBody{
         Error: "Error Marshaling",

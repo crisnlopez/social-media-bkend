@@ -10,148 +10,112 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	res "github.com/crisnlopez/social-media-bkend/internal/response"
+	"github.com/crisnlopez/social-media-bkend/internal/response"
 )
 
-type userHandler struct {
-  // we have a user gateway between handler and repository
-  repo Repository
+type UserHandler struct {
+  gtw  UserGateway
 }
 
-func New(db *sql.DB) userHandler{
-  return userHandler{
-    repo: newRepository(db),
+func New(db *sql.DB) *UserHandler{
+  return &UserHandler{
+    gtw: NewGateway(db),
   }
 }
 
-func (h userHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
   // Decode request
   decoder := json.NewDecoder(r.Body)
-  user := User{}
-  err := decoder.Decode(&user)
+  newUser := UserRequest{}
+  err := decoder.Decode(&newUser)
   if err != nil {
     http.Error(w, err.Error(), 400)
     return
   }
-  // Check if user already exists
-  exists, err := h.repo.GetUserEmail(user)
 
+  // Check if user already exists
+  exists, err := h.gtw.GetUserEmail(newUser.Email)
   if err != nil{
+    response.RespondWithError(w, http.StatusInternalServerError, err)
     return 
   }
   if exists{
+    response.RespondWithError(w, http.StatusBadRequest, errors.New("User provided already exists"))
     return 
   }
 
-
-  // Execute Query
-  result, err := h.db.Exec("INSERT INTO users (email, pass, user_nick, user_name, age) VALUES (?, ?, ?, ?, ?)", user.Email, user.Pass, user.Nick, user.Name, user.Age)
+  // Create User
+  user, err := h.gtw.CreateUser(&newUser)
   if err != nil {
-    http.Error(w, err.Error(), 500)
+    response.RespondWithError(w, http.StatusInternalServerError, err)
     return
   }
-  // Get UserID
-  id, err := result.LastInsertId()
-  if err != nil {
-    res.RespondWithError(w, http.StatusInternalServerError, err)
-    return
-  }
-  user.ID = int(id)
-
-  // Response
-  w.WriteHeader(201)
-  w.Header().Set("Content-Type", "application/json")
-
-  response, err := json.Marshal(user)
-  // If response error
-  if err != nil {
-    log.Println("Error Marshalling", err)
-    w.WriteHeader(500)
-    w.Write(response)
-    return
+     
+  log.Println(user)
+  response.RespondWithJSON(w, 200, &user)
   }
 
-  w.Write(response)
-}
-
-func (h userHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
   user := User{}
 
   // Getting userID from Request
   userID, err := strconv.Atoi(ps.ByName("id"))
   if err != nil {
-    res.RespondWithError(w, http.StatusInternalServerError, err)
+    response.RespondWithError(w, http.StatusInternalServerError, err)
     return
   }
   if userID == 0 {
-    res.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to get user!"))
+    response.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to get user!"))
     return
   }
 
-  // Getting User
-  if err := h.db.QueryRow("SELECT * FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Email, &user.Pass, &user.Nick, &user.Name, &user.Age); err != nil {
-    if err == sql.ErrNoRows { // If user doesn't exist
-      res.RespondWithError(w, http.StatusNotFound, err)
-      return
-    } else {
-      res.RespondWithError(w, http.StatusInternalServerError, err)
-      return
-    }
-  }
-
-  res.RespondWithJSON(w, http.StatusOK, user)
+  response.RespondWithJSON(w, http.StatusOK, user)
 }
 
-func (h userHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-  // Getting userID from Request
-  userID, err := strconv.Atoi(ps.ByName("id"))
-  if userID == 0 {
-    res.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to update user!"))
+func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+  // Getting id from Request
+  id, err := strconv.Atoi(ps.ByName("id"))
+  if id == 0 {
+    response.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to update user!"))
     return
   }
 
   // Decode JSON from request
   decoder := json.NewDecoder(r.Body)
-  user := UserUpdated{}
+  user := UserRequest{}
   err = decoder.Decode(&user)
   if err != nil {
-    res.RespondWithError(w, http.StatusInternalServerError, err)
-    return
-  }
-
-  // Check if user exists
-  var idCheck string
-  row := h.db.QueryRow("SELECT id FROM users WHERE id = ?", userID)
-  err = row.Scan(&idCheck)
-  if err != nil {
-    res.RespondWithError(w, http.StatusInternalServerError, err)
+    response.RespondWithError(w, http.StatusInternalServerError, err)
     return
   }
 
   // Updating user
-  _, err = h.db.Exec("UPDATE users SET pass = ?, user_name = ?, age = ?, user_nick = ?, email = ? WHERE id = ?", user.Pass, user.Name, user.Age, user.Nick, user.Email, userID)
+  userUpdate, err := h.gtw.UpdateUser(&user, id)
   if err != nil {
-    res.RespondWithError(w, http.StatusInternalServerError, err)
+    response.RespondWithError(w, http.StatusInternalServerError, err)
     return
   }
 
-  res.RespondWithJSON(w, http.StatusOK, user)
+  response.RespondWithJSON(w, http.StatusOK, userUpdate)
 }
 
-func (h userHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
   // Getting userID from Request
-  userID, err := strconv.Atoi(ps.ByName("id"))
-  if userID == 0 {
-    res.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to delete user!"))
+  id, err := strconv.Atoi(ps.ByName("id"))
+  if err != nil {
+    response.RespondWithError(w, http.StatusInternalServerError, err)
+  }
+  if id == 0 {
+    response.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to delete user!"))
     return
   }
 
   // Deleting User
-  _, err = h.db.Exec("DELETE FROM users WHERE id = ?", userID)
+  err = h.gtw.DeleteUser(id)
   if err != nil {
-    res.RespondWithError(w, http.StatusInternalServerError, err)
+    response.RespondWithError(w, http.StatusInternalServerError, err)
     return
   }
 
-  res.RespondWithJSON(w, http.StatusOK, "User Deleted")
+  response.RespondWithJSON(w, http.StatusOK, "User Deleted")
 }
