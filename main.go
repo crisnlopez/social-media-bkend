@@ -1,42 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
-	"time"
+	"os"
 
-	"github.com/julienschmidt/httprouter"
-
-	db "github.com/crisnlopez/social-media-bkend/internal/database"
-  "github.com/crisnlopez/social-media-bkend/internal/user"
+	"github.com/crisnlopez/social-media-bkend/api"
 )
 
+const defaultPort = "8080"
+
 func main() { 
-  db, err := db.OpenDB("social_media")
-  if err != nil {
-    log.Fatal(err)
-  } 
+  log.Println("starting API")
+  port := os.Getenv("PORT")
 
-  userHandler := user.New(db)
-  // Router
-  router := httprouter.New()
-  router.GET("/users/:id", userHandler.GetUser)
-  router.PUT("/users/:id", userHandler.UpdateUser)
-  router.POST("/users", userHandler.CreateUser)
-  router.DELETE("/users/:id", userHandler.DeleteUser)
- 
-	const addr = "localhost:8080"
-	srv := http.Server{
-		Addr:         addr,
-		Handler:      router,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
+  if port != "" {
+    port = defaultPort
+  }
 
-	// Blocks forever, until the server
-	// has an unrecoverable error
-	fmt.Println("server started on", addr)
-  err = srv.ListenAndServe()
-	log.Fatal(err)
+  api.Start(port) 
 }
