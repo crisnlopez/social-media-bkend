@@ -11,22 +11,24 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/crisnlopez/social-media-bkend/internal/response"
+  "github.com/crisnlopez/social-media-bkend/internal/user/models"
+  gtw "github.com/crisnlopez/social-media-bkend/internal/user/gateway"
 )
 
 type UserHandler struct {
-  gtw  UserGateway
+  gtw  gtw.UserGateway
 }
 
 func New(db *sql.DB) *UserHandler{
   return &UserHandler{
-    gtw: NewGateway(db),
+    gtw: gtw.NewGateway(db),
   }
 }
 
 func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
   // Decode request
   decoder := json.NewDecoder(r.Body)
-  newUser := UserRequest{}
+  newUser := user.UserRequest{}
   err := decoder.Decode(&newUser)
   if err != nil {
     http.Error(w, err.Error(), 400)
@@ -56,7 +58,7 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
   }
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-  user := User{}
+  user := user.User{}
 
   // Getting userID from Request
   userID, err := strconv.Atoi(ps.ByName("id"))
@@ -82,7 +84,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 
   // Decode JSON from request
   decoder := json.NewDecoder(r.Body)
-  user := UserRequest{}
+  user := user.UserRequest{}
   err = decoder.Decode(&user)
   if err != nil {
     response.RespondWithError(w, http.StatusInternalServerError, err)
@@ -90,7 +92,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
   }
 
   // Updating user
-  userUpdate, err := h.gtw.UpdateUser(&user, id)
+  userUpdate, err := h.gtw.UpdateUser(&user, int64(id))
   if err != nil {
     response.RespondWithError(w, http.StatusInternalServerError, err)
     return

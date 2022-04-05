@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/crisnlopez/social-media-bkend/internal/database"
-	"github.com/crisnlopez/social-media-bkend/internal/user"
+	handler "github.com/crisnlopez/social-media-bkend/internal/user/handler"
 )
 
 func Start(port string) {
@@ -14,7 +14,7 @@ func Start(port string) {
   }
   defer db.Close()
 
-  r := routes(user.New(db))
+  r := routes(handler.New(db))
   server := newServer(port, r)
 
   server.Start(port)

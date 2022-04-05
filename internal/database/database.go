@@ -22,6 +22,7 @@ func OpenDB(dbName string) (*sql.DB, error) {
     Addr: "127.0.0.1:3306",
     DBName: dbName,
     AllowNativePasswords: true,
+    ParseTime: true,
   }
 
   db, err := sql.Open("mysql", cfg.FormatDSN())

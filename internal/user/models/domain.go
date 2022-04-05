@@ -4,12 +4,12 @@ import "time"
 
 
 type User struct {
-  ID        int       `json:"id"`
+  ID        int64     `json:"id"`
   Email     string    `json:"email"`
   Pass      string    `json:"pass"`
   Nick      string    `json:"nick"`
   Name      string    `json:"name"`
-  Age       int       `json:"age"`
+  Age       int64     `json:"age"`
   CreatedAt time.Time `json:"created_at"`
 }
 
@@ -18,5 +18,5 @@ type UserRequest struct {
   Pass  string `json:"pass"`
   Nick  string `json:"nick"`
   Name  string `json:"name"`
-  Age   int    `json:"age"`
+  Age   int64  `json:"age"`
 }

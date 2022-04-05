@@ -1,11 +1,11 @@
 package api
 
 import (
-	"github.com/crisnlopez/social-media-bkend/internal/user"
+	handler "github.com/crisnlopez/social-media-bkend/internal/user/handler"
 	"github.com/julienschmidt/httprouter"
 )
 
-func routes(services *user.UserHandler) *httprouter.Router{
+func routes(services *handler.UserHandler) *httprouter.Router{
   r := httprouter.New()
 
   r.GET("/users/:id", services.GetUser)
