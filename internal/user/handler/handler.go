@@ -1,10 +1,9 @@
-package user
+package handler
 
 import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -52,10 +51,9 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
     response.RespondWithError(w, http.StatusInternalServerError, err)
     return
   }
-     
-  log.Println(user)
+   
   response.RespondWithJSON(w, 200, &user)
-  }
+}
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
   user := user.User{}

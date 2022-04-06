@@ -1,10 +1,9 @@
-package user
+package repository
 
 import (
 	"database/sql"
 	"errors"
 	"log"
-	"time"
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/models"
 )
@@ -13,23 +12,21 @@ type Repository interface{
   createUser(u *user.UserRequest) (*user.User, error)
   getUser(id int64) (*user.User, error)
   getUserEmail(email string) (bool, error)
-  updateUser(u *user.UserRequest, id int64) (*user.User, error)
-  deleteUser(id int) (error)
+  updateUser(u *user.UserRequest, id int64) (int64, error)
+  deleteUser(id int64) (error)
 }
 
-type UserQueries struct{
+type userQueries struct{
   db *sql.DB
 }
 
-func NewRepository(db *sql.DB) *UserQueries{
-  return &UserQueries{db:db}
+func NewRepository(db *sql.DB) Repository{
+  return &userQueries{db:db}
 }
 
-func (r *UserQueries) createUser(u *user.UserRequest) (*user.User, error) {
-  CreatedAt := time.Now().Local().UTC()
-
+func (r *userQueries) createUser(u *user.UserRequest) (*user.User, error) {
   // Create User
-  result, err := r.db.Exec("INSERT INTO users (email, pass, name, age, nick, created_at) VALUES (?, ?, ?, ?, ?, ?)", u.Email, u.Pass, u.Name, u.Age, u.Nick, CreatedAt)
+  result, err := r.db.Exec("INSERT INTO users (email, pass, name, age, nick, created_at) VALUES (?, ?, ?, ?, ?, ?)", u.Email, u.Pass, u.Name, u.Age, u.Nick, u.CreatedAt)
   if err != nil {
     log.Printf("cannot save New User, %s\n",err.Error())
     return nil, err
@@ -48,25 +45,24 @@ func (r *UserQueries) createUser(u *user.UserRequest) (*user.User, error) {
     Nick: u.Nick,
     Name: u.Name,
     Age: u.Age,
-    CreatedAt: CreatedAt,
+    CreatedAt: u.CreatedAt,
   }, nil
 }
 
-func (r *UserQueries) getUser(id int64) (*user.User, error) {
+func (r *userQueries) getUser(id int64) (*user.User, error) {
   u := user.User{}
   // Getting User
-  if err := r.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&u.ID, &u.Email, &u.Pass, &u.Name, &u.Age, &u.Nick, &u.CreatedAt); err != nil {
+  if err := r.db.QueryRow(`SELECT * FROM users WHERE id = ?`, id).Scan(&u.ID, &u.Email, &u.Pass, &u.Nick, &u.Name, &u.Age, &u.CreatedAt); err != nil {
     if err == sql.ErrNoRows {
       return &user.User{}, sql.ErrNoRows
     } else {
       return &user.User{}, err
     }
   }
-
   return &u, nil
 }
 
-func (r *UserQueries) getUserEmail(email string) (bool, error){
+func (r *userQueries) getUserEmail(email string) (bool, error){
   // Check if user already exists
   var col string
   row := r.db.QueryRow("SELECT email FROM users WHERE email = ?",email)
@@ -78,27 +74,21 @@ func (r *UserQueries) getUserEmail(email string) (bool, error){
   return true, nil
 }
 
-func (r *UserQueries) updateUser(u *user.UserRequest, id int64) (*user.User, error) {
-  result, err := r.db.Exec("UPDATE users SET email = ?, pass = ?, name= ?,  age= ?, nick= ? WHERE id = ?", u.Email, u.Pass, u.Name, u.Age, u.Nick, id) 
+func (r *userQueries) updateUser(u *user.UserRequest, id int64) (int64, error) {
+  result, err := r.db.Exec(`UPDATE users SET email = ?, pass = ?, name= ?,  age= ?, nick= ? WHERE id = ?`, u.Email, u.Pass, u.Name, u.Age, u.Nick, id) 
   if err != nil {
-    return &user.User{}, err
+    return 0, err
   }
 
   rows, err := result.RowsAffected()
   if err != nil {
-    return &user.User{}, err
+    return 0, err
   }
-  log.Printf("Number of rows affected: %v\n", rows)
 
-  usr, err := r.getUser(id)
-  if err != nil {
-    return &user.User{}, err
-  }
-  
-  return usr, nil
+  return rows, nil
 }
 
-func (r *UserQueries) deleteUser(id int) error {
+func (r *userQueries) deleteUser(id int) error {
   result, err := r.db.Exec("DELETE FROM users WHERE id = ?", id)
   if err != nil {
     return err
