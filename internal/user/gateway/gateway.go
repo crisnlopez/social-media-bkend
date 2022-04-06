@@ -1,9 +1,10 @@
-package user
+package gateway
 
 import (
   "database/sql"
 
   "github.com/crisnlopez/social-media-bkend/internal/user/models"
+  "github.com/crisnlopez/social-media-bkend/internal/user/repository"
 )
 
 type UserGateway interface {
@@ -15,29 +16,29 @@ type UserGateway interface {
 }
 
 type UserInRepo struct {
-	repo Repository
+	repo repository.Repository
 }
 
 func NewGateway(db *sql.DB) UserGateway {
-	return &UserInRepo{NewRepository(db)}
+	return &UserInRepo{repository.NewRepository(db)}
 }
 
 func (r *UserInRepo) CreateUser(newUser *user.UserRequest) (*user.User, error) {
-	return r.repo.createUser(newUser)
+	return r.repo.CreateUser(newUser)
 }
 
 func (r *UserInRepo) GetUser(id int64) (*user.User, error) {
-	return r.repo.getUser(id)
+	return r.repo.GetUser(id)
 }
 
 func (r *UserInRepo) GetUserEmail(email string) (bool, error) {
-	return r.repo.getUserEmail(email)
+	return r.repo.GetUserEmail(email)
 }
 
 func (r *UserInRepo) UpdateUser(u *user.UserRequest, id int64) (*user.User, error) {
-	return r.repo.updateUser(u, id)
+	return r.repo.UpdateUser(u, id)
 }
 
 func (r *UserInRepo) DeleteUser(id int) (error) {
-  return r.repo.deleteUser(id)
+  return r.repo.DeleteUser(id)
 }

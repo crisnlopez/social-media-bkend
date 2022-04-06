@@ -1,4 +1,4 @@
-package user
+package gateway
 
 import (
 	"database/sql"
@@ -20,7 +20,7 @@ var userRequest = user.UserRequest{
 }
 
 func createUser(t *testing.T) *user.User{
-   user, err := testQueries.createUser(&userRequest)
+   user, err := testQueries.CreateUser(&userRequest)
 
    require.NoError(t, err)
    require.NotEmpty(t, user)
@@ -43,7 +43,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
    newUser := createUser(t)
-   getUser, err := testQueries.getUser(newUser.ID)
+   getUser, err := testQueries.GetUser(newUser.ID)
   
    require.NoError(t, err)
    require.NotEmpty(t, getUser)
@@ -66,7 +66,7 @@ func TestUpdateUser(t *testing.T) {
      Age: util.RandomAge(),
    }
 
-   updateUser, err := testQueries.updateUser(&arg, newUser.ID)
+   updateUser, err := testQueries.UpdateUser(&arg, newUser.ID)
 
    require.NoError(t,err)
    require.NotEmpty(t,updateUser)
@@ -82,12 +82,12 @@ func TestUpdateUser(t *testing.T) {
 
 func TestGetUserEmail(t *testing.T) {
    newUser := createUser(t)
-   okEmail, err := testQueries.getUserEmail(newUser.Email)
+   okEmail, err := testQueries.GetUserEmail(newUser.Email)
 
    require.NoError(t, err)
    require.True(t, okEmail)
 
-   dontExist, err := testQueries.getUserEmail("Email_dontExist@dontExist.com")
+   dontExist, err := testQueries.GetUserEmail("Email_dontExist@dontExist.com")
    require.Error(t, err)
    require.False(t, dontExist)
 }
@@ -95,10 +95,10 @@ func TestGetUserEmail(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
    newUser := createUser(t)
 
-   err := testQueries.deleteUser(int(newUser.ID))
+   err := testQueries.DeleteUser(int(newUser.ID))
    require.NoError(t, err)
 
-   dontExist, err := testQueries.getUser(newUser.ID)
+   dontExist, err := testQueries.GetUser(newUser.ID)
    require.Error(t, err)
    require.EqualError(t, err, sql.ErrNoRows.Error())
    require.Empty(t, dontExist)

@@ -1,4 +1,4 @@
-package user
+package gateway
 
 import (
 	"log"
@@ -6,9 +6,10 @@ import (
 	"testing"
 
 	db "github.com/crisnlopez/social-media-bkend/internal/database"
+  "github.com/crisnlopez/social-media-bkend/internal/user/repository"
 )
 
-var testQueries *UserQueries 
+var testQueries *repository.UserQueries 
 
 func TestMain(m *testing.M) {
   conn, err := db.OpenDB("social_media")
@@ -16,7 +17,7 @@ func TestMain(m *testing.M) {
     log.Fatal(err)
   }
 
-  testQueries = NewRepository(conn)
+  testQueries = repository.NewRepository(conn)
 
   os.Exit(m.Run())
 }
