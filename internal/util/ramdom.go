@@ -36,11 +36,11 @@ func RandomEmail() string {
 }
 
 func RandomName() string {
-  return RandomString(6)
+  return RandomString(4) + "name"
 }
 
 func RandomNick() string {
-  return RandomString(8)
+  return RandomString(5) + "nick"
 }
 
 func RandomAge() int64 {
@@ -48,5 +48,5 @@ func RandomAge() int64 {
 }
 
 func RandomPass() string {
-  return RandomString(10) 
+  return RandomString(8) + "pass" 
 }
