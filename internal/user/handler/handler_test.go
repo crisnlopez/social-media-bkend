@@ -55,14 +55,14 @@ func TestCreateUserHandler(t *testing.T) {
 			name: "OK",
 			mockActions: func(gtwMock *mocks.MockUserGateway) {
 				gtwMock.EXPECT().
-				        GetUserEmail(userReq.Email).
-								Times(1).
-								Return(false, nil)
+				GetUserEmail(userReq.Email).
+				Times(1).
+				Return(false, nil)
 
 				gtwMock.EXPECT().
-				       CreateUser(userReq).
-							 Times(1).
-							 Return(userExpected, nil)
+				CreateUser(userReq).
+				Times(1).
+				Return(userExpected, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -72,9 +72,9 @@ func TestCreateUserHandler(t *testing.T) {
 			name: "Bad Request",
 			mockActions: func(gtwMock *mocks.MockUserGateway) {
 				gtwMock.EXPECT().
-				        GetUserEmail(userReq.Email).
-								Times(1).
-								Return(true, nil)
+				GetUserEmail(userReq.Email).
+				Times(1).
+				Return(true, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
