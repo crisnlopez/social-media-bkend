@@ -16,116 +16,116 @@ import (
 )
 
 var u = &user.User{
-  ID: util.RandomInt(0,1000),
-  Email: util.RandomEmail(),
-  Pass: util.RandomPass(),
-  Nick: util.RandomNick(),
-  Name: util.RandomName(),
-  Age: util.RandomAge(),
-  CreatedAt: time.Now().UTC().Local(),
+	ID:        util.RandomInt(0, 1000),
+	Email:     util.RandomEmail(),
+	Pass:      util.RandomPass(),
+	Nick:      util.RandomNick(),
+	Name:      util.RandomName(),
+	Age:       util.RandomAge(),
+	CreatedAt: time.Now().UTC().Local(),
 }
 
 var uRequest = &user.UserRequest{
-  Email: util.RandomEmail(),
-  Pass: util.RandomPass(),
-  Nick: util.RandomNick(),
-  Name: util.RandomName(),
-  Age: util.RandomAge(),
-  CreatedAt: time.Now().UTC().Local(),
+	Email:     util.RandomEmail(),
+	Pass:      util.RandomPass(),
+	Nick:      util.RandomNick(),
+	Name:      util.RandomName(),
+	Age:       util.RandomAge(),
+	CreatedAt: time.Now().UTC().Local(),
 }
 
 func NewMock() (*sql.DB, sqlmock.Sqlmock) {
-  db, mock, err := sqlmock.New()
-  if err != nil {
-    log.Fatalf("Error: %s", err)
-  }
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+	}
 
-  return db, mock
+	return db, mock
 }
 
 func TestCreateUser(t *testing.T) {
-  db, mock := NewMock()
-  repo := &userQueries{db}
-  defer func() {
-    repo.db.Close()
-  }()
+	db, mock := NewMock()
+	repo := &userQueries{db}
+	defer func() {
+		repo.db.Close()
+	}()
 
-  query := `INSERT INTO users (email, pass, name, age, nick, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO users (email, pass, name, age, nick, created_at) VALUES (?, ?, ?, ?, ?, ?)`
 
-  mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(uRequest.Email,uRequest.Pass,uRequest.Name,uRequest.Age,uRequest.Nick,uRequest.CreatedAt).WillReturnResult(sqlmock.NewResult(1,1))
+	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(uRequest.Email, uRequest.Pass, uRequest.Name, uRequest.Age, uRequest.Nick, uRequest.CreatedAt).WillReturnResult(sqlmock.NewResult(1, 1))
 
-  user, err := repo.createUser(uRequest)
-  assert.NoError(t,err)
-  assert.NotEmpty(t,user)
-} 
+	user, err := repo.createUser(uRequest)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, user)
+}
 
 func TestGetUser(t *testing.T) {
-  db, mock := NewMock()
-  repo := &userQueries{db}
-  defer func() {
-    repo.db.Close()
-  }()
+	db, mock := NewMock()
+	repo := &userQueries{db}
+	defer func() {
+		repo.db.Close()
+	}()
 
-  query :=`SELECT * FROM users WHERE id = ?` 
+	query := `SELECT * FROM users WHERE id = ?`
 
-  rows := sqlmock.NewRows([]string{"id","email","pass","nick","name","age","created_at"}).AddRow(u.ID,u.Email,u.Pass,u.Nick,u.Name,u.Age,u.CreatedAt)
+	rows := sqlmock.NewRows([]string{"id", "email", "pass", "nick", "name", "age", "created_at"}).AddRow(u.ID, u.Email, u.Pass, u.Nick, u.Name, u.Age, u.CreatedAt)
 
-  mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.ID).WillReturnRows(rows)
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.ID).WillReturnRows(rows)
 
-  user, err := repo.getUser(u.ID)
-  assert.NoError(t, err)
-  assert.NotEmpty(t, user)
+	user, err := repo.getUser(u.ID)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, user)
 }
 
 func TestGetUserEmail(t *testing.T) {
-  db, mock := NewMock()
-  repo := &userQueries{db}
-  defer func() {
-    repo.db.Close()
-  }()
+	db, mock := NewMock()
+	repo := &userQueries{db}
+	defer func() {
+		repo.db.Close()
+	}()
 
-  query := `SELECT email FROM users WHERE email = ?`
+	query := `SELECT email FROM users WHERE email = ?`
 
-  row := mock.NewRows([]string{"email"}).AddRow(u.Email)
+	row := mock.NewRows([]string{"email"}).AddRow(u.Email)
 
-  mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.Email).WillReturnRows(row)
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.Email).WillReturnRows(row)
 
-  ok, err := repo.getUserEmail(u.Email)
-  require.NoError(t, err)
-  require.True(t, ok)
+	ok, err := repo.getUserEmail(u.Email)
+	require.NoError(t, err)
+	require.True(t, ok)
 
-  ok, err = repo.getUserEmail("falseemail@email.com")
-  require.Error(t, err)
-  require.False(t, ok)
+	ok, err = repo.getUserEmail("falseemail@email.com")
+	require.Error(t, err)
+	require.False(t, ok)
 }
 
 func TestUpdateUser(t *testing.T) {
-  db, mock := NewMock()
-  repo := &userQueries{db}
-  defer func() {
-    repo.db.Close()
-  }()
+	db, mock := NewMock()
+	repo := &userQueries{db}
+	defer func() {
+		repo.db.Close()
+	}()
 
 	query := `UPDATE users SET email = ?, pass = ?, name= ?,  age= ?, nick= ? WHERE id = ?`
 
 	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(uRequest.Email, uRequest.Pass, uRequest.Name, uRequest.Age, uRequest.Nick, u.ID).WillReturnResult(sqlmock.NewResult(0, 1)).WillReturnError(nil)
 
 	row, err := repo.updateUser(uRequest, u.ID)
-  require.NoError(t, err)
-	require.Equal(t,int64(1),row)
+	require.NoError(t, err)
+	require.Equal(t, int64(1), row)
 }
 
 func TestDeleteUser(t *testing.T) {
-  db, mock := NewMock()
-  repo := &userQueries{db}
-  defer func() {
-    repo.db.Close()
-  }()
+	db, mock := NewMock()
+	repo := &userQueries{db}
+	defer func() {
+		repo.db.Close()
+	}()
 
-  query := `DELETE FROM users WHERE id = ?`
+	query := `DELETE FROM users WHERE id = ?`
 
-  mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(u.ID).WillReturnResult(sqlmock.NewResult(0, 1)).WillReturnResult(sqlmock.NewResult(0,1))
+	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(u.ID).WillReturnResult(sqlmock.NewResult(0, 1)).WillReturnResult(sqlmock.NewResult(0, 1))
 
-  err := repo.deleteUser(int(u.ID))
-  require.NoError(t, err)
+	err := repo.deleteUser(int(u.ID))
+	require.NoError(t, err)
 }

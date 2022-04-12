@@ -9,23 +9,23 @@ import (
 )
 
 type server struct {
-  *http.Server
+	*http.Server
 }
 
-func newServer(listening string, router *httprouter.Router) *server{ 
+func newServer(listening string, router *httprouter.Router) *server {
 	srv := &http.Server{
-    Addr:         ":" + listening,
+		Addr:         ":" + listening,
 		Handler:      router,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-  return &server{srv}
+	return &server{srv}
 }
 
 func (srv *server) Start(port string) {
-  log.Printf("Starting Server on port: %v\n", port) 
-   
-  err := srv.ListenAndServe()
+	log.Printf("Starting Server on port: %v\n", port)
+
+	err := srv.ListenAndServe()
 	log.Fatal(err)
 }

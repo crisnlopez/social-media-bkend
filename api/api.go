@@ -8,14 +8,14 @@ import (
 )
 
 func Start(port string) {
-  db, err := database.OpenDB("social_media")
-  if err != nil {
-    log.Fatal(err)
-  }
-  defer db.Close()
+	db, err := database.OpenDB("social_media")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-  r := routes(handler.New(db))
-  server := newServer(port, r)
+	r := routes(handler.New(db))
+	server := newServer(port, r)
 
-  server.Start(port)
+	server.Start(port)
 }

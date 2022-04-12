@@ -5,13 +5,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func routes(services *handler.UserHandler) *httprouter.Router{
-  r := httprouter.New()
+func routes(services *handler.UserHandler) *httprouter.Router {
+	r := httprouter.New()
 
-  r.GET("/users/:id", services.GetUser)
-  r.PUT("/users/:id", services.UpdateUser)
-  r.POST("/users", services.CreateUser)
-  r.DELETE("/users/:id", services.DeleteUser)
+	r.GET("/users/:id", services.GetUser)
+	r.PUT("/users/:id", services.UpdateUser)
+	r.POST("/users", services.CreateUser)
+	r.DELETE("/users/:id", services.DeleteUser)
 
-  return r 
+	return r
 }

@@ -9,13 +9,13 @@ import (
 
 const defaultPort = "8080"
 
-func main() { 
-  log.Println("starting API")
-  port := os.Getenv("PORT")
+func main() {
+	log.Println("starting API")
+	port := os.Getenv("PORT")
 
-  if port != "" {
-    port = defaultPort
-  }
+	if port != "" {
+		port = defaultPort
+	}
 
-  api.Start(port) 
+	api.Start(port)
 }

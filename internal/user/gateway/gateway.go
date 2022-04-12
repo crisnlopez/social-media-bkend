@@ -1,18 +1,20 @@
 package gateway
 
 import (
-  "database/sql"
+	"database/sql"
 
-  "github.com/crisnlopez/social-media-bkend/internal/user/models"
-  repo "github.com/crisnlopez/social-media-bkend/internal/user/repository"
+	"github.com/crisnlopez/social-media-bkend/internal/user/models"
+	repo "github.com/crisnlopez/social-media-bkend/internal/user/repository"
 )
+
+//go:generate mockgen -destination=mocks/mock_UserGateway.go -package=mocks github.com/crisnlopez/social-media-bkend/internal/user/gateway UserGateway
 
 type UserGateway interface {
 	CreateUser(u *user.UserRequest) (*user.User, error)
 	GetUser(id int64) (*user.User, error)
 	GetUserEmail(email string) (bool, error)
-  UpdateUser(u *user.UserRequest, id int64) (int64, error)
-  DeleteUser(id int) (error)
+	UpdateUser(u *user.UserRequest, id int64) (int64, error)
+	DeleteUser(id int) error
 }
 
 type UserInRepo struct {
@@ -39,6 +41,6 @@ func (r *UserInRepo) UpdateUser(u *user.UserRequest, id int64) (int64, error) {
 	return r.UpdateUser(u, id)
 }
 
-func (r *UserInRepo) DeleteUser(id int) (error) {
-  return r.DeleteUser(id)
+func (r *UserInRepo) DeleteUser(id int) error {
+	return r.DeleteUser(id)
 }
