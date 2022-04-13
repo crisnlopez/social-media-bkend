@@ -9,7 +9,7 @@ import (
 )
 
 type Repository interface {
-	createUser(u *user.UserRequest) (*user.User, error)
+	createUser(u *user.UserRequest) (int64, error)
 	getUser(id int64) (*user.User, error)
 	getUserEmail(email string) (bool, error)
 	updateUser(u *user.UserRequest, id int64) (int64, error)
@@ -24,29 +24,21 @@ func NewRepository(db *sql.DB) Repository {
 	return &userQueries{db: db}
 }
 
-func (r *userQueries) createUser(u *user.UserRequest) (*user.User, error) {
+func (r *userQueries) createUser(u *user.UserRequest) (int64, error) {
 	// Create User
 	result, err := r.db.Exec("INSERT INTO users (email, pass, name, age, nick, created_at) VALUES (?, ?, ?, ?, ?, ?)", u.Email, u.Pass, u.Name, u.Age, u.Nick, u.CreatedAt)
 	if err != nil {
 		log.Printf("cannot save New User, %s\n", err.Error())
-		return nil, err
+		return 0, err
 	}
 
 	// Get UserID
 	id, err := result.LastInsertId()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &user.User{
-		ID:        id,
-		Email:     u.Email,
-		Pass:      u.Pass,
-		Nick:      u.Nick,
-		Name:      u.Name,
-		Age:       u.Age,
-		CreatedAt: u.CreatedAt,
-	}, nil
+	return id, nil	
 }
 
 func (r *userQueries) getUser(id int64) (*user.User, error) {

@@ -46,27 +46,34 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 	}
 
 	// Create User
-	user, err := h.Gtw.CreateUser(&newUser)
+	id, err := h.Gtw.CreateUser(&newUser)
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	response.RespondWithJSON(w, 200, &user)
+	response.RespondWithJSON(w, 200, &id)
 }
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	user := user.User{}
-
-	// Getting userID from Request
-	userID, err := strconv.Atoi(ps.ByName("id"))
+	// Getting id from Request
+	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
 	}
-	if userID == 0 {
+	if id == 0 {
 		response.RespondWithError(w, http.StatusBadRequest, errors.New("no userID provided to get user!"))
 		return
+	}
+
+	// Call GetUser
+	user, err := h.Gtw.GetUser(int64(id))
+	if err == sql.ErrNoRows {
+ 	response.RespondWithError(w, http.StatusNotFound, err)
+	}
+	if err != nil {
+		response.RespondWithError(w, http.StatusInternalServerError, err)
 	}
 
 	response.RespondWithJSON(w, http.StatusOK, user)
