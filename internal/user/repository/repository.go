@@ -74,7 +74,7 @@ func (r *userQueries) updateUser(u *user.UserRequest, id int64) (int64, error) {
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return 0, err
+		return rows, err
 	}
 
 	return rows, nil

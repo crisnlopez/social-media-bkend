@@ -30,7 +30,7 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 	newUser := user.UserRequest{}
 	err := decoder.Decode(&newUser)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 		return
 	}
 
-	response.RespondWithJSON(w, 200, &id)
+	response.RespondWithJSON(w, 201, &id)
 }
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -89,21 +89,21 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Decode JSON from request
 	decoder := json.NewDecoder(r.Body)
-	user := user.UserRequest{}
-	err = decoder.Decode(&user)
+	updateUser := user.UserRequest{}
+	err = decoder.Decode(&updateUser)
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Updating user
-	userUpdate, err := h.Gtw.UpdateUser(&user, int64(id))
+	rows, err := h.Gtw.UpdateUser(&updateUser, int64(id))
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	response.RespondWithJSON(w, http.StatusOK, userUpdate)
+	response.RespondWithJSON(w, http.StatusOK, rows)
 }
 
 func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

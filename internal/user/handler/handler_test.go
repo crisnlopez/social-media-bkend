@@ -52,7 +52,7 @@ func TestCreateUser(t *testing.T) {
 	testCases := []struct {
 		name          string
 		mockActions   func(gtwMock *mocks.MockUserGateway)
-		checkResponse func(recorder *httptest.ResponseRecorder)
+		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
@@ -68,7 +68,7 @@ func TestCreateUser(t *testing.T) {
 					Return(userExpected.ID, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, http.StatusCreated, recorder.Code)
 			},
 		},
 		{
@@ -107,8 +107,6 @@ func TestCreateUser(t *testing.T) {
 			gtwMock := mocks.NewMockUserGateway(mockCrtl)
 			tc.mockActions(gtwMock)
 
-			recorder := httptest.NewRecorder()
-
 			data, err := json.Marshal(userReq)
 			require.NoError(t, err)
 
@@ -117,22 +115,24 @@ func TestCreateUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
-			testHandler := &handler.UserHandler{Gtw: gtwMock}
-			testHandler.CreateUser(recorder, req, httprouter.Params{})
+			rr := httptest.NewRecorder()
 
-			tc.checkResponse(recorder)
+			testHandler := &handler.UserHandler{Gtw: gtwMock}
+			testHandler.CreateUser(rr, req, httprouter.Params{})
+
+			tc.checkResponse(rr)
 		})
 	}
 }
 
 func TestGetUser(t *testing.T) {
 	userReq := createUserRequest()
-	userRes := newUser(userReq)	
+	userRes := newUser(userReq)
 
 	testCases := []struct {
 		name          string
 		mockActions   func(gtwMock *mocks.MockUserGateway)
-		checkResponse func(recorder *httptest.ResponseRecorder)
+		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
@@ -154,8 +154,8 @@ func TestGetUser(t *testing.T) {
 					Times(1).
 					Return(nil, sql.ErrNoRows)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusNotFound, recorder.Code)
+			checkResponse: func(rr *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, rr.Code)
 			},
 		},
 		{
@@ -165,7 +165,7 @@ func TestGetUser(t *testing.T) {
 					GetUser(userRes.ID).
 					Times(1).
 					Return(nil, errors.New("Internal Server Error"))
-				},
+			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
@@ -182,7 +182,7 @@ func TestGetUser(t *testing.T) {
 			gtwMock := mocks.NewMockUserGateway(mockCrtl)
 			tc.mockActions(gtwMock)
 
-			recorder := httptest.NewRecorder()
+			rr := httptest.NewRecorder()
 
 			url := "/users/:id"
 
@@ -190,12 +190,78 @@ func TestGetUser(t *testing.T) {
 			require.NoError(t, err)
 
 			testHandler := &handler.UserHandler{Gtw: gtwMock}
-			testHandler.GetUser(recorder, req, []httprouter.Param{{
+			testHandler.GetUser(rr, req, []httprouter.Param{{
+				Key:   "id",
+				Value: strconv.Itoa(int(userRes.ID)),
+			}})
+
+			tc.checkResponse(rr)
+		})
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+	userReq := createUserRequest()
+	userRes := newUser(userReq)
+
+	testCases := []struct {
+		name          string
+		mockActions   func(gtwMock *mocks.MockUserGateway)
+		checkResponse func(rr *httptest.ResponseRecorder)
+	}{
+		{
+			name: "User Updated",
+			mockActions: func(gtwMock *mocks.MockUserGateway) {
+				gtwMock.EXPECT().
+				  UpdateUser(userReq, userRes.ID).
+					Times(1).
+					Return(int64(1), nil)
+			},
+			checkResponse: func(rr *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, rr.Code)
+			},
+		},
+		{
+			name: "User Doesn't Exists",
+			mockActions: func(gtwMock *mocks.MockUserGateway) {
+				gtwMock.EXPECT().
+				  UpdateUser(userReq, userRes.ID).
+					Times(1).
+					Return(int64(0), errors.New("Unexpected Error"))
+			},
+			checkResponse: func(rr *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, rr.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			gtwMock := mocks.NewMockUserGateway(mockCtrl)
+			tc.mockActions(gtwMock)
+
+			data, err := json.Marshal(userReq)
+			require.NoError(t, err)
+
+			rr := httptest.NewRecorder()
+
+			url := "/users/:id"
+
+			req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			testHandler := &handler.UserHandler{Gtw: gtwMock}
+			testHandler.UpdateUser(rr, req, []httprouter.Param{{
 				Key: "id",
 				Value: strconv.Itoa(int(userRes.ID)),
 			}})
 
-			tc.checkResponse(recorder)
+			tc.checkResponse(rr)
 		})
 	}
 }
