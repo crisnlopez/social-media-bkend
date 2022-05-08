@@ -13,7 +13,7 @@ func main() {
 	log.Println("starting API")
 	port := os.Getenv("PORT")
 
-	if port != "" {
+	if port == "" {
 		port = defaultPort
 	}
 
