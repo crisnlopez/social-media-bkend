@@ -18,7 +18,7 @@ type UserGateway interface {
 }
 
 type UserInRepo struct {
-	repo.Repository
+	repo repo.Repository
 }
 
 func NewGateway(db *sql.DB) UserGateway {
@@ -26,21 +26,21 @@ func NewGateway(db *sql.DB) UserGateway {
 }
 
 func (r *UserInRepo) CreateUser(newUser *user.UserRequest) (int64, error) {
-	return r.CreateUser(newUser)
+	return r.repo.CreateUser(newUser)
 }
 
 func (r *UserInRepo) GetUser(id int64) (*user.User, error) {
-	return r.GetUser(id)
+	return r.repo.GetUser(id)
 }
 
 func (r *UserInRepo) GetUserEmail(email string) (bool, error) {
-	return r.GetUserEmail(email)
+	return r.repo.GetUserEmail(email)
 }
 
 func (r *UserInRepo) UpdateUser(u *user.UserRequest, id int64) (int64, error) {
-	return r.UpdateUser(u, id)
+	return r.repo.UpdateUser(u, id)
 }
 
 func (r *UserInRepo) DeleteUser(id int) error {
-	return r.DeleteUser(id)
+	return r.repo.DeleteUser(id)
 }

@@ -70,10 +70,12 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprout
 	// Call GetUser
 	user, err := h.Gtw.GetUser(int64(id))
 	if err == sql.ErrNoRows {
- 	response.RespondWithError(w, http.StatusNotFound, err)
+		response.RespondWithError(w, http.StatusNotFound, err)
+		return
 	}
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
+		return
 	}
 
 	response.RespondWithJSON(w, http.StatusOK, user)
