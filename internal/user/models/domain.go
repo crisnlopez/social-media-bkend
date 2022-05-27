@@ -18,5 +18,4 @@ type UserRequest struct {
 	Nick      string    `json:"nick"`
 	Name      string    `json:"name"`
 	Age       int64     `json:"age"`
-	CreatedAt time.Time `json:"created_at"`
 }
