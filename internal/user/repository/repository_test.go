@@ -31,7 +31,6 @@ var uRequest = &user.UserRequest{
 	Nick:      util.RandomNick(),
 	Name:      util.RandomName(),
 	Age:       util.RandomAge(),
-	CreatedAt: time.Now().UTC().Local(),
 }
 
 func NewMock() (*sql.DB, sqlmock.Sqlmock) {
@@ -50,11 +49,11 @@ func TestCreateUser(t *testing.T) {
 		repo.db.Close()
 	}()
 
-	query := `INSERT INTO users (email, pass, name, age, nick, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO users (email, pass, name, age, nick) VALUES (?, ?, ?, ?, ?)`
 
-	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(uRequest.Email, uRequest.Pass, uRequest.Name, uRequest.Age, uRequest.Nick, uRequest.CreatedAt).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(uRequest.Email, uRequest.Pass, uRequest.Name, uRequest.Age, uRequest.Nick).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	user, err := repo.createUser(uRequest)
+	user, err := repo.CreateUser(uRequest)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, user)
 }
@@ -72,7 +71,7 @@ func TestGetUser(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.ID).WillReturnRows(rows)
 
-	user, err := repo.getUser(u.ID)
+	user, err := repo.GetUser(u.ID)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, user)
 }
@@ -90,11 +89,11 @@ func TestGetUserEmail(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.Email).WillReturnRows(row)
 
-	ok, err := repo.getUserEmail(u.Email)
+	ok, err := repo.GetUserEmail(u.Email)
 	require.NoError(t, err)
 	require.True(t, ok)
 
-	ok, err = repo.getUserEmail("falseemail@email.com")
+	ok, err = repo.GetUserEmail("falseemail@email.com")
 	require.Error(t, err)
 	require.False(t, ok)
 }
@@ -110,7 +109,7 @@ func TestUpdateUser(t *testing.T) {
 
 	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(uRequest.Email, uRequest.Pass, uRequest.Name, uRequest.Age, uRequest.Nick, u.ID).WillReturnResult(sqlmock.NewResult(0, 1)).WillReturnError(nil)
 
-	row, err := repo.updateUser(uRequest, u.ID)
+	row, err := repo.UpdateUser(uRequest, u.ID)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), row)
 }
@@ -126,6 +125,6 @@ func TestDeleteUser(t *testing.T) {
 
 	mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(u.ID).WillReturnResult(sqlmock.NewResult(0, 1)).WillReturnResult(sqlmock.NewResult(0, 1))
 
-	err := repo.deleteUser(int(u.ID))
+	err := repo.DeleteUser(int(u.ID))
 	require.NoError(t, err)
 }
