@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/handler"
 	user "github.com/crisnlopez/social-media-bkend/internal/user/models"
@@ -29,7 +28,6 @@ func createUserRequest() *user.UserRequest {
 		Nick:      util.RandomNick(),
 		Name:      util.RandomName(),
 		Age:       util.RandomAge(),
-		CreatedAt: time.Now().UTC(),
 	}
 }
 
@@ -41,7 +39,6 @@ func newUser(u *user.UserRequest) *user.User {
 		Nick:      u.Nick,
 		Name:      u.Name,
 		Age:       u.Age,
-		CreatedAt: u.CreatedAt,
 	}
 }
 
