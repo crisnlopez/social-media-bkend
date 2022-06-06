@@ -22,7 +22,7 @@ func New(db *sql.DB) *UserHandler {
 	return &UserHandler{
 		Gtw: gtw.NewGateway(db),
 	}
-}
+} 
 
 func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Decode request
@@ -30,18 +30,13 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 	newUser := user.UserRequest{}
 	err := decoder.Decode(&newUser)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Check if user already exists
-	exists, err := h.Gtw.GetUserEmail(newUser.Email)
-	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
 	}
-	if exists {
-		response.RespondWithError(w, http.StatusBadRequest, errors.New("User provided already exists"))
+
+	err = gtw.ValidateRequest(newUser)
+	if err != nil {
+		response.RespondWithError(w, http.StatusBadRequest, err)
 		return
 	}
 
