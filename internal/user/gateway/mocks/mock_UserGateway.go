@@ -78,21 +78,6 @@ func (mr *MockUserGatewayMockRecorder) GetUser(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockUserGateway)(nil).GetUser), arg0)
 }
 
-// GetUserEmail mocks base method.
-func (m *MockUserGateway) GetUserEmail(arg0 string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserEmail", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserEmail indicates an expected call of GetUserEmail.
-func (mr *MockUserGatewayMockRecorder) GetUserEmail(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserEmail", reflect.TypeOf((*MockUserGateway)(nil).GetUserEmail), arg0)
-}
-
 // UpdateUser mocks base method.
 func (m *MockUserGateway) UpdateUser(arg0 *user.UserRequest, arg1 int64) (int64, error) {
 	m.ctrl.T.Helper()

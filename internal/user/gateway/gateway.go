@@ -12,7 +12,6 @@ import (
 type UserGateway interface {
 	CreateUser(u *user.UserRequest) (int64, error)
 	GetUser(id int64) (*user.User, error)
-	GetUserEmail(email string) (bool, error)
 	UpdateUser(u *user.UserRequest, id int64) (int64, error)
 	DeleteUser(id int) error
 }
@@ -31,10 +30,6 @@ func (r *UserInRepo) CreateUser(newUser *user.UserRequest) (int64, error) {
 
 func (r *UserInRepo) GetUser(id int64) (*user.User, error) {
 	return r.repo.GetUser(id)
-}
-
-func (r *UserInRepo) GetUserEmail(email string) (bool, error) {
-	return r.repo.GetUserEmail(email)
 }
 
 func (r *UserInRepo) UpdateUser(u *user.UserRequest, id int64) (int64, error) {
