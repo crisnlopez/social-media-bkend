@@ -10,7 +10,6 @@ import (
 type Repository interface {
 	CreateUser(u *user.UserRequest) (int64, error)
 	GetUser(id int64) (*user.User, error)
-	GetUserEmail(email string) (bool, error)
 	UpdateUser(u *user.UserRequest, id int64) (int64, error)
 	DeleteUser(id int) error
 }
@@ -51,18 +50,6 @@ func (r *userQueries) GetUser(id int64) (*user.User, error) {
 		}
 	}
 	return &u, nil
-}
-
-func (r *userQueries) GetUserEmail(email string) (bool, error) {
-	// Check if user already exists
-	var col string
-	row := r.db.QueryRow("SELECT email FROM users WHERE email = ?", email)
-	if err := row.Scan(&col); err == sql.ErrNoRows {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func (r *userQueries) UpdateUser(u *user.UserRequest, id int64) (int64, error) {

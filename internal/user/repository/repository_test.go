@@ -76,28 +76,6 @@ func TestGetUser(t *testing.T) {
 	assert.NotEmpty(t, user)
 }
 
-func TestGetUserEmail(t *testing.T) {
-	db, mock := NewMock()
-	repo := &userQueries{db}
-	defer func() {
-		repo.db.Close()
-	}()
-
-	query := `SELECT email FROM users WHERE email = ?`
-
-	row := mock.NewRows([]string{"email"}).AddRow(u.Email)
-
-	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(u.Email).WillReturnRows(row)
-
-	ok, err := repo.GetUserEmail(u.Email)
-	require.NoError(t, err)
-	require.True(t, ok)
-
-	ok, err = repo.GetUserEmail("falseemail@email.com")
-	require.Error(t, err)
-	require.False(t, ok)
-}
-
 func TestUpdateUser(t *testing.T) {
 	db, mock := NewMock()
 	repo := &userQueries{db}
