@@ -5,26 +5,106 @@ import (
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/gateway"
 	user "github.com/crisnlopez/social-media-bkend/internal/user/models"
+	"github.com/crisnlopez/social-media-bkend/internal/util"
 	"github.com/go-playground/validator/v10"
 )
 
 func TestValidateStruct(t *testing.T) {
-  u := user.UserRequest{
-    Email: "test@example.com",
-    Pass: "1234",
-    Nick: "nick test",
-    Name: "Name test",
-    Age: 20,
-  }
+	tests := []struct {
+		name string
+		input user.UserRequest
+		expectedError bool // True if err == validator.ValidationErrors
+	}{
+		{
+			name: "OK",
+			input: user.UserRequest{
+				Email: util.RandomEmail(),
+				Pass: util.RandomPass(),
+				Nick: util.RandomNick(),
+				Name: util.RandomName(),
+				Age: util.RandomAge(),
+			},
+			expectedError: false,
+		},
+		{
+			name: "Invalid Email",
+			input: user.UserRequest{
+				Email: "fakeinvalidemail.com",
+				Pass: util.RandomPass(),
+				Nick: util.RandomNick(),
+				Name: util.RandomName(),
+				Age: util.RandomAge(),
+			},
+			expectedError: true,
+		},
+		{
+			name: "Email required",
+			input: user.UserRequest{
+				Pass: util.RandomPass(),
+				Nick: util.RandomNick(),
+				Name: util.RandomName(),
+				Age: util.RandomAge(),
+			},
+			expectedError: true,
+		},
+		{
+			name: "Pass required",
+			input: user.UserRequest{
+				Email: util.RandomEmail(),
+				Nick: util.RandomNick(),
+				Name: util.RandomName(),
+				Age: util.RandomAge(),
+			},
+			expectedError: true,
+		},
+		{
+			name: "Nick required",
+			input: user.UserRequest{
+				Email: util.RandomEmail(),
+				Pass: util.RandomPass(),
+				Name: util.RandomName(),
+				Age: util.RandomAge(),
+			},
+			expectedError: true,
+		},
+		{
+			name: "Name required",
+			input: user.UserRequest{
+				Email: util.RandomEmail(),
+				Pass: util.RandomPass(),
+				Nick: util.RandomNick(),
+				Age: util.RandomAge(),
+			},
+			expectedError: true,
+		},
+		{
+			name: "Age required",
+			input: user.UserRequest{
+				Email: util.RandomEmail(),
+				Pass: util.RandomPass(),
+				Nick: util.RandomNick(),
+				Name: util.RandomName(),
+			},
+			expectedError: true,
+		},
+	}
 
-	err := gateway.ValidateRequest(u)
-	if err != nil {
-		if _, ok := err.(*validator.InvalidValidationError); ok {
-			t.Fatal("Error InvalidValidationError", err)
-		}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotErr := false
+			err := gateway.ValidateRequest(tc.input)
 
-		if _, ok := err.(validator.ValidationErrors); ok {
-			t.Fatal("Error ValidationErrors:",err)
-		}
-	} 
+			if err != nil {
+				if _, ok := err.(validator.ValidationErrors); ok {
+					gotErr = true
+				} else {
+					t.Logf("expected ValidationErrors. Got: %v", err.Error())
+				}
+			}
+
+			if tc.expectedError != gotErr {
+				t.Logf("expectedError: %v Got: %v\n",tc.expectedError, gotErr)
+			}
+		})
+	}
 }
