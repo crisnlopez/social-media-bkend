@@ -23,22 +23,22 @@ import (
 
 func createUserRequest() *user.UserRequest {
 	return &user.UserRequest{
-		Email:     util.RandomEmail(),
-		Pass:      util.RandomPass(),
-		Nick:      util.RandomNick(),
-		Name:      util.RandomName(),
-		Age:       util.RandomAge(),
+		Email: util.RandomEmail(),
+		Pass:  util.RandomPass(),
+		Nick:  util.RandomNick(),
+		Name:  util.RandomName(),
+		Age:   util.RandomAge(),
 	}
 }
 
 func newUser(u *user.UserRequest) *user.User {
 	return &user.User{
-		ID:        util.RandomInt(0, 100),
-		Email:     u.Email,
-		Pass:      u.Pass,
-		Nick:      u.Nick,
-		Name:      u.Name,
-		Age:       u.Age,
+		ID:    util.RandomInt(0, 100),
+		Email: u.Email,
+		Pass:  u.Pass,
+		Nick:  u.Nick,
+		Name:  u.Name,
+		Age:   u.Age,
 	}
 }
 
@@ -69,16 +69,16 @@ func TestCreateUser(t *testing.T) {
 			},
 		},
 		{
-			name: "Invalid Json",
-			input: []byte(`{"email":"test@test.com","pass":"12354","nick":"nicktest","name":"nametest","age":20`), // missing "}" to be a valid json
+			name:        "Invalid Json",
+			input:       []byte(`{"email":"test@test.com","pass":"12354","nick":"nicktest","name":"nametest","age":20`), // missing "}" to be a valid json
 			mockActions: nil,
 			checkResponse: func(rr *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, rr.Code)
 			},
 		},
 		{
-			name: "Bad Request",
-			input: []byte(`{"email":"test@test.com"}`), // All files required
+			name:        "Bad Request",
+			input:       []byte(`{"email":"test@test.com"}`), // All files required
 			mockActions: nil,
 			checkResponse: func(rr *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, rr.Code)
@@ -110,7 +110,7 @@ func TestCreateUser(t *testing.T) {
 
 			gtwMock := mocks.NewMockUserGateway(mockCrtl)
 			if tc.mockActions != nil {
-				tc.mockActions(gtwMock)	
+				tc.mockActions(gtwMock)
 			}
 
 			url := "/users"
@@ -205,7 +205,7 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	userReq := createUserRequest()
-	id := util.RandomInt(1,100)
+	id := util.RandomInt(1, 100)
 
 	testCases := []struct {
 		name          string
@@ -216,7 +216,7 @@ func TestUpdateUser(t *testing.T) {
 			name: "User Updated",
 			mockActions: func(gtwMock *mocks.MockUserGateway) {
 				gtwMock.EXPECT().
-				  UpdateUser(userReq, id).
+					UpdateUser(userReq, id).
 					Times(1).
 					Return(int64(1), nil)
 			},
@@ -228,7 +228,7 @@ func TestUpdateUser(t *testing.T) {
 			name: "User Doesn't Exists",
 			mockActions: func(gtwMock *mocks.MockUserGateway) {
 				gtwMock.EXPECT().
-				  UpdateUser(userReq, id).
+					UpdateUser(userReq, id).
 					Times(1).
 					Return(int64(0), errors.New("Unexpected Error"))
 			},
@@ -260,7 +260,7 @@ func TestUpdateUser(t *testing.T) {
 
 			testHandler := &handler.UserHandler{Gtw: gtwMock}
 			testHandler.UpdateUser(rr, req, []httprouter.Param{{
-				Key: "id",
+				Key:   "id",
 				Value: strconv.Itoa(int(id)),
 			}})
 
@@ -270,37 +270,37 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	id := util.RandomInt(0,100)
+	id := util.RandomInt(0, 100)
 
 	testCases := []struct {
-		name string
-		mockActions func(gtwMock *mocks.MockUserGateway)
+		name          string
+		mockActions   func(gtwMock *mocks.MockUserGateway)
 		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
 			name: "Delete User",
 			mockActions: func(gtwMock *mocks.MockUserGateway) {
 				gtwMock.EXPECT().
-				  DeleteUser(int(id)).
+					DeleteUser(int(id)).
 					Times(1).
 					Return(nil)
-		  },
+			},
 			checkResponse: func(rr *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, rr.Code)
 			},
-	  },
+		},
 		{
 			name: "Internal Error",
 			mockActions: func(gtwMock *mocks.MockUserGateway) {
 				gtwMock.EXPECT().
-				  DeleteUser(int(id)).
+					DeleteUser(int(id)).
 					Times(1).
 					Return(errors.New("User doesn't exists"))
-		  },
+			},
 			checkResponse: func(rr *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, rr.Code)
 			},
-	  },
+		},
 	}
 
 	for i := range testCases {
@@ -322,7 +322,7 @@ func TestDeleteUser(t *testing.T) {
 
 			testHandler := &handler.UserHandler{Gtw: gtwMock}
 			testHandler.DeleteUser(rr, req, []httprouter.Param{{
-				Key: "id",
+				Key:   "id",
 				Value: strconv.Itoa(int(id)),
 			}})
 

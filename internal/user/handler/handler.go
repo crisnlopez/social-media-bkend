@@ -22,7 +22,7 @@ func New(db *sql.DB) *UserHandler {
 	return &UserHandler{
 		Gtw: gtw.NewGateway(db),
 	}
-} 
+}
 
 func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Decode request

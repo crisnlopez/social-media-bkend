@@ -11,18 +11,18 @@ import (
 
 func TestValidateStruct(t *testing.T) {
 	tests := []struct {
-		name string
-		input user.UserRequest
+		name          string
+		input         user.UserRequest
 		expectedError bool // True if err == validator.ValidationErrors
 	}{
 		{
 			name: "OK",
 			input: user.UserRequest{
 				Email: util.RandomEmail(),
-				Pass: util.RandomPass(),
-				Nick: util.RandomNick(),
-				Name: util.RandomName(),
-				Age: util.RandomAge(),
+				Pass:  util.RandomPass(),
+				Nick:  util.RandomNick(),
+				Name:  util.RandomName(),
+				Age:   util.RandomAge(),
 			},
 			expectedError: false,
 		},
@@ -30,10 +30,10 @@ func TestValidateStruct(t *testing.T) {
 			name: "Invalid Email",
 			input: user.UserRequest{
 				Email: "fakeinvalidemail.com",
-				Pass: util.RandomPass(),
-				Nick: util.RandomNick(),
-				Name: util.RandomName(),
-				Age: util.RandomAge(),
+				Pass:  util.RandomPass(),
+				Nick:  util.RandomNick(),
+				Name:  util.RandomName(),
+				Age:   util.RandomAge(),
 			},
 			expectedError: true,
 		},
@@ -43,7 +43,7 @@ func TestValidateStruct(t *testing.T) {
 				Pass: util.RandomPass(),
 				Nick: util.RandomNick(),
 				Name: util.RandomName(),
-				Age: util.RandomAge(),
+				Age:  util.RandomAge(),
 			},
 			expectedError: true,
 		},
@@ -51,9 +51,9 @@ func TestValidateStruct(t *testing.T) {
 			name: "Pass required",
 			input: user.UserRequest{
 				Email: util.RandomEmail(),
-				Nick: util.RandomNick(),
-				Name: util.RandomName(),
-				Age: util.RandomAge(),
+				Nick:  util.RandomNick(),
+				Name:  util.RandomName(),
+				Age:   util.RandomAge(),
 			},
 			expectedError: true,
 		},
@@ -61,9 +61,9 @@ func TestValidateStruct(t *testing.T) {
 			name: "Nick required",
 			input: user.UserRequest{
 				Email: util.RandomEmail(),
-				Pass: util.RandomPass(),
-				Name: util.RandomName(),
-				Age: util.RandomAge(),
+				Pass:  util.RandomPass(),
+				Name:  util.RandomName(),
+				Age:   util.RandomAge(),
 			},
 			expectedError: true,
 		},
@@ -71,9 +71,9 @@ func TestValidateStruct(t *testing.T) {
 			name: "Name required",
 			input: user.UserRequest{
 				Email: util.RandomEmail(),
-				Pass: util.RandomPass(),
-				Nick: util.RandomNick(),
-				Age: util.RandomAge(),
+				Pass:  util.RandomPass(),
+				Nick:  util.RandomNick(),
+				Age:   util.RandomAge(),
 			},
 			expectedError: true,
 		},
@@ -81,9 +81,9 @@ func TestValidateStruct(t *testing.T) {
 			name: "Age required",
 			input: user.UserRequest{
 				Email: util.RandomEmail(),
-				Pass: util.RandomPass(),
-				Nick: util.RandomNick(),
-				Name: util.RandomName(),
+				Pass:  util.RandomPass(),
+				Nick:  util.RandomNick(),
+				Name:  util.RandomName(),
 			},
 			expectedError: true,
 		},
@@ -103,7 +103,7 @@ func TestValidateStruct(t *testing.T) {
 			}
 
 			if tc.expectedError != gotErr {
-				t.Logf("expectedError: %v Got: %v\n",tc.expectedError, gotErr)
+				t.Logf("expectedError: %v Got: %v\n", tc.expectedError, gotErr)
 			}
 		})
 	}

@@ -37,7 +37,7 @@ func (r *userQueries) CreateUser(u *user.UserRequest) (int64, error) {
 		return 0, err
 	}
 
-	return id, nil	
+	return id, nil
 }
 
 func (r *userQueries) GetUser(id int64) (*user.User, error) {

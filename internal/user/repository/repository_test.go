@@ -26,11 +26,11 @@ var u = &user.User{
 }
 
 var uRequest = &user.UserRequest{
-	Email:     util.RandomEmail(),
-	Pass:      util.RandomPass(),
-	Nick:      util.RandomNick(),
-	Name:      util.RandomName(),
-	Age:       util.RandomAge(),
+	Email: util.RandomEmail(),
+	Pass:  util.RandomPass(),
+	Nick:  util.RandomNick(),
+	Name:  util.RandomName(),
+	Age:   util.RandomAge(),
 }
 
 func NewMock() (*sql.DB, sqlmock.Sqlmock) {

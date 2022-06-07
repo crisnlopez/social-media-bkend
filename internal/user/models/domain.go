@@ -1,7 +1,7 @@
 package user
 
 import (
-	"time"	
+	"time"
 )
 
 type User struct {
@@ -15,9 +15,9 @@ type User struct {
 }
 
 type UserRequest struct {
-	Email     string    `json:"email" validate:"required,email"`
-	Pass      string    `json:"pass" validate:"required"`
-	Nick      string    `json:"nick" validate:"required"`
-	Name      string    `json:"name" validate:"required"`
-	Age       int64     `json:"age" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+	Pass  string `json:"pass" validate:"required"`
+	Nick  string `json:"nick" validate:"required"`
+	Name  string `json:"name" validate:"required"`
+	Age   int64  `json:"age" validate:"required"`
 }
