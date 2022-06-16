@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/crisnlopez/social-media-bkend/internal/database"
-	handler "github.com/crisnlopez/social-media-bkend/internal/user/handler"
+	"github.com/julienschmidt/httprouter"
 )
 
 func Start(port string) {
@@ -15,8 +15,9 @@ func Start(port string) {
 	}
 	defer db.Close()
 
-	r := routes(handler.New(db))
-	server := newServer(port, r)
+	r := httprouter.New()
+	defineRoutes(r, db)
 
+	server := newServer(port, r)
 	server.Start(port)
 }
