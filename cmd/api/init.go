@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/crisnlopez/social-media-bkend/internal/database"
 	"github.com/crisnlopez/social-media-bkend/internal/user/handler"
+	"github.com/crisnlopez/social-media-bkend/pkg/database"
 	"github.com/julienschmidt/httprouter"
 )
 

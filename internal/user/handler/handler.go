@@ -9,9 +9,9 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/crisnlopez/social-media-bkend/internal/response"
 	gtw "github.com/crisnlopez/social-media-bkend/internal/user/gateway"
 	"github.com/crisnlopez/social-media-bkend/internal/user/models"
+	"github.com/crisnlopez/social-media-bkend/pkg/response"
 )
 
 type UserHandler struct {

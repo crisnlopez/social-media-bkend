@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/models"
-	"github.com/crisnlopez/social-media-bkend/internal/util"
+	"github.com/crisnlopez/social-media-bkend/pkg/util"
 )
 
 var u = &user.User{
