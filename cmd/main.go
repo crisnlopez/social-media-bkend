@@ -17,5 +17,5 @@ func main() {
 		port = defaultPort
 	}
 
-  api.Start(port)
+	api.Start(port)
 }
