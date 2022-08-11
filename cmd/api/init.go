@@ -3,8 +3,11 @@ package api
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/crisnlopez/social-media-bkend/internal/database"
+	"github.com/crisnlopez/social-media-bkend/internal/user/handler"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -28,4 +31,17 @@ func (srv *server) Start(port string) {
 
 	err := srv.ListenAndServe()
 	log.Fatal(err)
+}
+
+func Start(port string) {
+	db, err := database.OpenDB(os.Getenv("DB_NAME"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	r := routes(handler.New(db))
+	server := newServer(port, r)
+
+	server.Start(port)
 }
