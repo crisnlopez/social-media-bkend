@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/crisnlopez/social-media-bkend/internal/response"
 	handler "github.com/crisnlopez/social-media-bkend/internal/user/handler"
+	"github.com/crisnlopez/social-media-bkend/pkg/response"
 	"github.com/julienschmidt/httprouter"
 )
 

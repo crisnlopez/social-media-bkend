@@ -5,7 +5,7 @@ import (
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/gateway"
 	user "github.com/crisnlopez/social-media-bkend/internal/user/models"
-	"github.com/crisnlopez/social-media-bkend/internal/util"
+	"github.com/crisnlopez/social-media-bkend/pkg/util"
 	"github.com/go-playground/validator/v10"
 )
 

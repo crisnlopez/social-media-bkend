@@ -12,7 +12,7 @@ import (
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/handler"
 	user "github.com/crisnlopez/social-media-bkend/internal/user/models"
-	"github.com/crisnlopez/social-media-bkend/internal/util"
+	"github.com/crisnlopez/social-media-bkend/pkg/util"
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/crisnlopez/social-media-bkend/internal/user/gateway/mocks"
