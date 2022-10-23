@@ -23,9 +23,8 @@ func newServer(listening string, router *httprouter.Router) *server {
 	return &server{srv}
 }
 
-func (srv *server) Start(port string) {
+func (srv *server) Start(port string) error {
 	log.Printf("Starting Server on port: %v\n", port)
 
-	err := srv.ListenAndServe()
-	log.Fatal(err)
+	return srv.ListenAndServe()
 }

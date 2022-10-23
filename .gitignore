@@ -8,6 +8,7 @@
 
 # Test binary, built with 'go test -c'
 *.test
+*coverage.out
 
 # Database Model
 *.mwb

@@ -5,8 +5,18 @@ import (
 	"os"
 
 	"github.com/crisnlopez/social-media-bkend/internal/database"
-	handler "github.com/crisnlopez/social-media-bkend/internal/user/handler"
+	"github.com/crisnlopez/social-media-bkend/internal/user/handler"
 )
+
+type App struct{}
+
+func (app *App) Start(port string) {}
+
+type Options struct{}
+
+func NewApp(opts ...Options) (*App, error) {
+	return &App{}, nil
+}
 
 func Start(port string) {
 	db, err := database.OpenDB(os.Getenv("DB_NAME"))
