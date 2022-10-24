@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -11,17 +12,24 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type UserHandler struct {
-	Gtw Gateway
+type Gateway interface {
+	CreateUser(u UserRequest) (int64, error)
+	GetUser(id int64) (User, error)
+	UpdateUser(u UserRequest, id int64) (int64, error)
+	DeleteUser(id int) error
 }
 
-func NewHandler(db *sql.DB) *UserHandler {
-	return &UserHandler{
-		Gtw: NewGateway(db),
+type handler struct {
+	gtw Gateway
+}
+
+func NewHandler(gtw Gateway) *handler {
+	return &handler{
+		gtw: gtw,
 	}
 }
 
-func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h handler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Decode request
 	decoder := json.NewDecoder(r.Body)
 	var newUser UserRequest
@@ -38,7 +46,7 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 	}
 
 	// Create User
-	id, err := h.Gtw.CreateUser(newUser)
+	id, err := h.gtw.CreateUser(newUser)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err)
 		return
@@ -47,7 +55,7 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httpro
 	respondWithJSON(w, 201, &id)
 }
 
-func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h handler) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Getting id from Request
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
@@ -60,7 +68,7 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// Call GetUser
-	user, err := h.Gtw.GetUser(int64(id))
+	user, err := h.gtw.GetUser(int64(id))
 	if err == sql.ErrNoRows {
 		respondWithError(w, http.StatusNotFound, err)
 		return
@@ -73,7 +81,7 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request, ps httprout
 	respondWithJSON(w, http.StatusOK, user)
 }
 
-func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h handler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Getting id from Request
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if id == 0 {
@@ -83,7 +91,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Decode JSON from request
 	decoder := json.NewDecoder(r.Body)
-  var updateUser UserRequest
+	var updateUser UserRequest
 	err = decoder.Decode(&updateUser)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err)
@@ -91,7 +99,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Updating user
-	rows, err := h.Gtw.UpdateUser(updateUser, int64(id))
+	rows, err := h.gtw.UpdateUser(updateUser, int64(id))
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err)
 		return
@@ -100,7 +108,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 	respondWithJSON(w, http.StatusOK, rows)
 }
 
-func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h handler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Getting userID from Request
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
@@ -112,7 +120,7 @@ func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Deleting User
-	err = h.Gtw.DeleteUser(id)
+	err = h.gtw.DeleteUser(id)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err)
 		return

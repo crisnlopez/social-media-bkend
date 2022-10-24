@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/crisnlopez/social-media-bkend/internal/database"
-	"github.com/crisnlopez/social-media-bkend/internal/user"
 )
 
 func Start(port string) {
@@ -15,7 +14,7 @@ func Start(port string) {
 	}
 	defer db.Close()
 
-	r := mapRoutes(user.NewHandler(db))
+	r := mapRoutes()
 	server := newServer(port, r)
 
 	server.Start(port)

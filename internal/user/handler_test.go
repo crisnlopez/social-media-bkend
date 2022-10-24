@@ -117,7 +117,7 @@ func TestCreateUser(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			testHandler := UserHandler{Gtw: gtwMock}
+			testHandler := handler{gtw: gtwMock}
 			testHandler.CreateUser(rr, req, httprouter.Params{})
 
 			tc.checkResponse(rr)
@@ -189,7 +189,7 @@ func TestGetUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			testHandler := UserHandler{Gtw: gtwMock}
+			testHandler := handler{gtw: gtwMock}
 			testHandler.GetUser(rr, req, []httprouter.Param{{
 				Key:   "id",
 				Value: strconv.Itoa(int(userRes.ID)),
@@ -255,7 +255,7 @@ func TestUpdateUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
-			testHandler := UserHandler{Gtw: gtwMock}
+			testHandler := handler{gtw: gtwMock}
 			testHandler.UpdateUser(rr, req, []httprouter.Param{{
 				Key:   "id",
 				Value: strconv.Itoa(int(id)),
@@ -317,7 +317,7 @@ func TestDeleteUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodDelete, url, nil)
 			require.NoError(t, err)
 
-			testHandler := UserHandler{Gtw: gtwMock}
+			testHandler := handler{gtw: gtwMock}
 			testHandler.DeleteUser(rr, req, []httprouter.Param{{
 				Key:   "id",
 				Value: strconv.Itoa(int(id)),

@@ -5,8 +5,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func mapRoutes(handler *user.UserHandler) *httprouter.Router {
+func mapRoutes() *httprouter.Router {
 	r := httprouter.New()
+
+	gtw := user.NewGateway()
+	handler := user.NewHandler(gtw)
 
 	r.GET("/users/:id", handler.GetUser)
 	r.PUT("/users/:id", handler.UpdateUser)

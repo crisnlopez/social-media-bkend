@@ -1,4 +1,4 @@
-package user
+package sql
 
 import (
 	"database/sql"
@@ -12,9 +12,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/crisnlopez/social-media-bkend/internal/util"
+
+	"github.com/crisnlopez/social-media-bkend/internal/user"
 )
 
-var u = User{
+var u = user.User{
 	ID:        util.RandomInt(0, 1000),
 	Email:     util.RandomEmail(),
 	Pass:      util.RandomPass(),
@@ -24,7 +26,7 @@ var u = User{
 	CreatedAt: time.Now().UTC().Local(),
 }
 
-var uRequest = UserRequest{
+var uRequest = user.UserRequest{
 	Email: util.RandomEmail(),
 	Pass:  util.RandomPass(),
 	Nick:  util.RandomNick(),
@@ -43,7 +45,7 @@ func NewMock() (*sql.DB, sqlmock.Sqlmock) {
 
 func TestCreateUserRepository(t *testing.T) {
 	db, mock := NewMock()
-	repo := &userQueries{db}
+	repo := UserQueries{db}
 	defer func() {
 		repo.db.Close()
 	}()
@@ -59,7 +61,7 @@ func TestCreateUserRepository(t *testing.T) {
 
 func TestGetUserRepository(t *testing.T) {
 	db, mock := NewMock()
-	repo := &userQueries{db}
+	repo := UserQueries{db}
 	defer func() {
 		repo.db.Close()
 	}()
@@ -77,7 +79,7 @@ func TestGetUserRepository(t *testing.T) {
 
 func TestUpdateUserRepository(t *testing.T) {
 	db, mock := NewMock()
-	repo := &userQueries{db}
+	repo := UserQueries{db}
 	defer func() {
 		repo.db.Close()
 	}()
@@ -93,7 +95,7 @@ func TestUpdateUserRepository(t *testing.T) {
 
 func TestDeleteUserRepository(t *testing.T) {
 	db, mock := NewMock()
-	repo := &userQueries{db}
+	repo := UserQueries{db}
 	defer func() {
 		repo.db.Close()
 	}()
