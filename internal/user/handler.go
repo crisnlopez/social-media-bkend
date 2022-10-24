@@ -1,4 +1,4 @@
-package handler
+package user
 
 import (
 	"database/sql"
@@ -7,41 +7,40 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/crisnlopez/social-media-bkend/internal/response"
-	gtw "github.com/crisnlopez/social-media-bkend/internal/user/gateway"
-	"github.com/crisnlopez/social-media-bkend/internal/user/models"
 )
 
 type UserHandler struct {
-	Gtw gtw.UserGateway
+	Gtw Gateway
 }
 
-func New(db *sql.DB) *UserHandler {
+func NewHandler(db *sql.DB) *UserHandler {
 	return &UserHandler{
-		Gtw: gtw.NewGateway(db),
+		Gtw: NewGateway(db),
 	}
 }
 
 func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Decode request
 	decoder := json.NewDecoder(r.Body)
-	newUser := user.UserRequest{}
+  var newUser UserRequest
 	err := decoder.Decode(&newUser)
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	err = gtw.ValidateRequest(newUser)
+	err = validateRequest(newUser)
 	if err != nil {
 		response.RespondWithError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	// Create User
-	id, err := h.Gtw.CreateUser(&newUser)
+	id, err := h.Gtw.CreateUser(newUser)
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
@@ -86,7 +85,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Decode JSON from request
 	decoder := json.NewDecoder(r.Body)
-	updateUser := user.UserRequest{}
+  var updateUser UserRequest
 	err = decoder.Decode(&updateUser)
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
@@ -94,7 +93,7 @@ func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Updating user
-	rows, err := h.Gtw.UpdateUser(&updateUser, int64(id))
+	rows, err := h.Gtw.UpdateUser(updateUser, int64(id))
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError, err)
 		return
@@ -122,4 +121,18 @@ func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	response.RespondWithJSON(w, http.StatusOK, "User Deleted")
+}
+
+func validateRequest(u UserRequest) error {
+	err := validator.New().Struct(u)
+
+	if err != nil {
+		if invalid, ok := err.(*validator.InvalidValidationError); ok {
+			return invalid
+		}
+
+		return err.(validator.ValidationErrors)
+	}
+
+	return nil
 }

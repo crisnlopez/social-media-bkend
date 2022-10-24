@@ -1,4 +1,4 @@
-package repository
+package user
 
 import (
 	"database/sql"
@@ -11,11 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/crisnlopez/social-media-bkend/internal/user/models"
 	"github.com/crisnlopez/social-media-bkend/internal/util"
 )
 
-var u = &user.User{
+var u = User{
 	ID:        util.RandomInt(0, 1000),
 	Email:     util.RandomEmail(),
 	Pass:      util.RandomPass(),
@@ -25,7 +24,7 @@ var u = &user.User{
 	CreatedAt: time.Now().UTC().Local(),
 }
 
-var uRequest = &user.UserRequest{
+var uRequest = UserRequest{
 	Email: util.RandomEmail(),
 	Pass:  util.RandomPass(),
 	Nick:  util.RandomNick(),
@@ -42,7 +41,7 @@ func NewMock() (*sql.DB, sqlmock.Sqlmock) {
 	return db, mock
 }
 
-func TestCreateUser(t *testing.T) {
+func TestCreateUserRepository(t *testing.T) {
 	db, mock := NewMock()
 	repo := &userQueries{db}
 	defer func() {
@@ -58,7 +57,7 @@ func TestCreateUser(t *testing.T) {
 	assert.NotEmpty(t, user)
 }
 
-func TestGetUser(t *testing.T) {
+func TestGetUserRepository(t *testing.T) {
 	db, mock := NewMock()
 	repo := &userQueries{db}
 	defer func() {
@@ -76,7 +75,7 @@ func TestGetUser(t *testing.T) {
 	assert.NotEmpty(t, user)
 }
 
-func TestUpdateUser(t *testing.T) {
+func TestUpdateUserRepository(t *testing.T) {
 	db, mock := NewMock()
 	repo := &userQueries{db}
 	defer func() {
@@ -92,7 +91,7 @@ func TestUpdateUser(t *testing.T) {
 	require.Equal(t, int64(1), row)
 }
 
-func TestDeleteUser(t *testing.T) {
+func TestDeleteUserRepository(t *testing.T) {
 	db, mock := NewMock()
 	repo := &userQueries{db}
 	defer func() {

@@ -1,4 +1,4 @@
-package handler_test
+package user
 
 import (
 	"bytes"
@@ -10,19 +10,16 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/crisnlopez/social-media-bkend/internal/user/handler"
-	user "github.com/crisnlopez/social-media-bkend/internal/user/models"
 	"github.com/crisnlopez/social-media-bkend/internal/util"
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/crisnlopez/social-media-bkend/internal/user/gateway/mocks"
 	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/require"
 )
 
-func createUserRequest() *user.UserRequest {
-	return &user.UserRequest{
+func createUserRequest() UserRequest {
+	return UserRequest{
 		Email: util.RandomEmail(),
 		Pass:  util.RandomPass(),
 		Nick:  util.RandomNick(),
@@ -31,8 +28,8 @@ func createUserRequest() *user.UserRequest {
 	}
 }
 
-func newUser(u *user.UserRequest) *user.User {
-	return &user.User{
+func newUser(u UserRequest) User {
+	return User{
 		ID:    util.RandomInt(0, 100),
 		Email: u.Email,
 		Pass:  u.Pass,
@@ -49,7 +46,7 @@ func TestCreateUser(t *testing.T) {
 	testCases := []struct {
 		name          string
 		input         []byte
-		mockActions   func(gtwMock *mocks.MockUserGateway)
+		mockActions   func(gtwMock MockGateway)
 		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
@@ -58,7 +55,7 @@ func TestCreateUser(t *testing.T) {
 				b, _ := json.Marshal(&userReq)
 				return b
 			}(),
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					CreateUser(userReq).
 					Times(1).
@@ -90,7 +87,7 @@ func TestCreateUser(t *testing.T) {
 				b, _ := json.Marshal(&userReq)
 				return b
 			}(),
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					CreateUser(userReq).
 					Return(int64(0), errors.New("Internal Server Error"))
@@ -108,9 +105,9 @@ func TestCreateUser(t *testing.T) {
 			mockCrtl := gomock.NewController(t)
 			defer mockCrtl.Finish()
 
-			gtwMock := mocks.NewMockUserGateway(mockCrtl)
+			gtwMock := NewMockGateway(mockCrtl)
 			if tc.mockActions != nil {
-				tc.mockActions(gtwMock)
+				tc.mockActions(*gtwMock)
 			}
 
 			url := "/users"
@@ -120,7 +117,7 @@ func TestCreateUser(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			testHandler := &handler.UserHandler{Gtw: gtwMock}
+			testHandler := UserHandler{Gtw: gtwMock}
 			testHandler.CreateUser(rr, req, httprouter.Params{})
 
 			tc.checkResponse(rr)
@@ -134,12 +131,12 @@ func TestGetUser(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		mockActions   func(gtwMock *mocks.MockUserGateway)
+		mockActions   func(gtwMock MockGateway)
 		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					GetUser(userRes.ID).
 					Times(1).
@@ -151,7 +148,7 @@ func TestGetUser(t *testing.T) {
 		},
 		{
 			name: "User Doesn't Exists",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					GetUser(gomock.Eq(userRes.ID)).
 					Times(1).
@@ -163,7 +160,7 @@ func TestGetUser(t *testing.T) {
 		},
 		{
 			name: "Internal Error",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					GetUser(userRes.ID).
 					Times(1).
@@ -182,8 +179,8 @@ func TestGetUser(t *testing.T) {
 			mockCrtl := gomock.NewController(t)
 			defer mockCrtl.Finish()
 
-			gtwMock := mocks.NewMockUserGateway(mockCrtl)
-			tc.mockActions(gtwMock)
+			gtwMock := NewMockGateway(mockCrtl)
+			tc.mockActions(*gtwMock)
 
 			rr := httptest.NewRecorder()
 
@@ -192,7 +189,7 @@ func TestGetUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			testHandler := &handler.UserHandler{Gtw: gtwMock}
+			testHandler := UserHandler{Gtw: gtwMock}
 			testHandler.GetUser(rr, req, []httprouter.Param{{
 				Key:   "id",
 				Value: strconv.Itoa(int(userRes.ID)),
@@ -209,12 +206,12 @@ func TestUpdateUser(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		mockActions   func(gtwMock *mocks.MockUserGateway)
+		mockActions   func(gtwMock MockGateway)
 		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
 			name: "User Updated",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					UpdateUser(userReq, id).
 					Times(1).
@@ -226,7 +223,7 @@ func TestUpdateUser(t *testing.T) {
 		},
 		{
 			name: "User Doesn't Exists",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					UpdateUser(userReq, id).
 					Times(1).
@@ -245,8 +242,8 @@ func TestUpdateUser(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
-			gtwMock := mocks.NewMockUserGateway(mockCtrl)
-			tc.mockActions(gtwMock)
+			gtwMock := NewMockGateway(mockCtrl)
+			tc.mockActions(*gtwMock)
 
 			data, err := json.Marshal(userReq)
 			require.NoError(t, err)
@@ -258,7 +255,7 @@ func TestUpdateUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
-			testHandler := &handler.UserHandler{Gtw: gtwMock}
+			testHandler := UserHandler{Gtw: gtwMock}
 			testHandler.UpdateUser(rr, req, []httprouter.Param{{
 				Key:   "id",
 				Value: strconv.Itoa(int(id)),
@@ -274,12 +271,12 @@ func TestDeleteUser(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		mockActions   func(gtwMock *mocks.MockUserGateway)
+		mockActions   func(gtwMock MockGateway)
 		checkResponse func(rr *httptest.ResponseRecorder)
 	}{
 		{
 			name: "Delete User",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					DeleteUser(int(id)).
 					Times(1).
@@ -291,7 +288,7 @@ func TestDeleteUser(t *testing.T) {
 		},
 		{
 			name: "Internal Error",
-			mockActions: func(gtwMock *mocks.MockUserGateway) {
+			mockActions: func(gtwMock MockGateway) {
 				gtwMock.EXPECT().
 					DeleteUser(int(id)).
 					Times(1).
@@ -310,8 +307,8 @@ func TestDeleteUser(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
-			gtwMock := mocks.NewMockUserGateway(mockCtrl)
-			tc.mockActions(gtwMock)
+			gtwMock := NewMockGateway(mockCtrl)
+			tc.mockActions(*gtwMock)
 
 			rr := httptest.NewRecorder()
 
@@ -320,7 +317,7 @@ func TestDeleteUser(t *testing.T) {
 			req, err := http.NewRequest(http.MethodDelete, url, nil)
 			require.NoError(t, err)
 
-			testHandler := &handler.UserHandler{Gtw: gtwMock}
+			testHandler := UserHandler{Gtw: gtwMock}
 			testHandler.DeleteUser(rr, req, []httprouter.Param{{
 				Key:   "id",
 				Value: strconv.Itoa(int(id)),
