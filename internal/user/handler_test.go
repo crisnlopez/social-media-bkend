@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"testing"
+	"time"
 
-	"github.com/crisnlopez/social-media-bkend/internal/util"
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/golang/mock/gomock"
@@ -18,30 +20,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createUserRequest() UserRequest {
-	return UserRequest{
-		Email: util.RandomEmail(),
-		Pass:  util.RandomPass(),
-		Nick:  util.RandomNick(),
-		Name:  util.RandomName(),
-		Age:   util.RandomAge(),
-	}
-}
-
-func newUser(u UserRequest) User {
-	return User{
-		ID:    util.RandomInt(0, 100),
-		Email: u.Email,
-		Pass:  u.Pass,
-		Nick:  u.Nick,
-		Name:  u.Name,
-		Age:   u.Age,
-	}
-}
-
 func TestCreateUser(t *testing.T) {
 	userReq := createUserRequest()
-	id := util.RandomInt(1, 100)
+	id := RandomInt(1, 100)
 
 	testCases := []struct {
 		name          string
@@ -202,7 +183,7 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	userReq := createUserRequest()
-	id := util.RandomInt(1, 100)
+	id := RandomInt(1, 100)
 
 	testCases := []struct {
 		name          string
@@ -267,7 +248,7 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	id := util.RandomInt(0, 100)
+	id := RandomInt(0, 100)
 
 	testCases := []struct {
 		name          string
@@ -326,4 +307,70 @@ func TestDeleteUser(t *testing.T) {
 			tc.checkResponse(rr)
 		})
 	}
+}
+
+func createUserRequest() UserRequest {
+	return UserRequest{
+		Email: RandomEmail(),
+		Pass:  RandomPass(),
+		Nick:  RandomNick(),
+		Name:  RandomName(),
+		Age:   RandomAge(),
+	}
+}
+
+func newUser(u UserRequest) User {
+	return User{
+		ID:    RandomInt(0, 100),
+		Email: u.Email,
+		Pass:  u.Pass,
+		Nick:  u.Nick,
+		Name:  u.Name,
+		Age:   u.Age,
+	}
+}
+
+const alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+// Gererate random Integer between min and max
+func RandomInt(min, max int64) int64 {
+	return min + rand.Int63n(max-min+1)
+}
+
+// Gererate random String of length n
+func RandomString(n int) string {
+	var sb strings.Builder
+
+	k := len(alphabet)
+
+	for i := 0; i < n; i++ {
+		c := alphabet[rand.Intn(k)]
+		sb.WriteByte(c)
+	}
+
+	return sb.String()
+}
+
+func RandomEmail() string {
+	return RandomString(6) + "@testemail.com"
+}
+
+func RandomName() string {
+	return RandomString(4) + "name"
+}
+
+func RandomNick() string {
+	return RandomString(5) + "nick"
+}
+
+func RandomAge() int64 {
+	return RandomInt(18, 90)
+}
+
+func RandomPass() string {
+	return RandomString(8) + "pass"
 }
